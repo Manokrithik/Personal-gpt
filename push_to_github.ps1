@@ -3,6 +3,7 @@ param (
     [string]$RepoUrl
 )
 
+$env:PATH = "C:\Users\^_^\AppData\Local\Programs\MinGit\cmd;C:\Users\^_^\AppData\Local\Programs\MinGit\mingw64\bin;$env:PATH"
 $git = "C:\Users\^_^\AppData\Local\Programs\MinGit\cmd\git.exe"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptDir

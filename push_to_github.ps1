@@ -3,11 +3,9 @@ param (
     [string]$RepoUrl
 )
 
-$ErrorActionPreference = "Stop"
+$git = "C:\Users\^_^\AppData\Local\Programs\MinGit\cmd\git.exe"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptDir
-
-$git = "C:\Users\^_^\AppData\Local\Programs\MinGit\cmd\git.exe"
 
 if (-not $RepoUrl) {
     $RepoUrl = Read-Host "Enter your GitHub repository URL (e.g. https://github.com/your-username/PersonalGPT.git)"
@@ -20,9 +18,8 @@ if (-not $RepoUrl) {
 
 Write-Host "Configuring remote origin to $RepoUrl..." -ForegroundColor Cyan
 
-# Check if origin already exists
-$existingRemote = & $git remote get-url origin 2>$null
-if ($existingRemote) {
+$remotes = & $git remote
+if ($remotes -contains "origin") {
     & $git remote set-url origin $RepoUrl
 } else {
     & $git remote add origin $RepoUrl
@@ -34,4 +31,8 @@ Write-Host "Renaming branch to main..." -ForegroundColor Cyan
 Write-Host "Pushing code to GitHub..." -ForegroundColor Green
 & $git push -u origin main
 
-Write-Host "Successfully deployed to GitHub: $RepoUrl" -ForegroundColor Green
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Successfully deployed to GitHub: $RepoUrl" -ForegroundColor Green
+} else {
+    Write-Host "Git push exited with code $LASTEXITCODE. If authentication or branch conflict occurred, please check credentials or rebase." -ForegroundColor Yellow
+}

@@ -1,0 +1,19 @@
+name: Docker CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/Dockerfile'
+      - 'frontend/Dockerfile'
+      - 'docker-compose.yml'
+
+jobs:
+  validate-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Config
+        run: |
+          docker compose config --quiet

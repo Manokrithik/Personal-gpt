@@ -37,3 +37,9 @@ if ($LASTEXITCODE -eq 0) {
 } else {
     Write-Host "Git push exited with code $LASTEXITCODE. If authentication or branch conflict occurred, please check credentials or rebase." -ForegroundColor Yellow
 }
+
+Write-Host "`nPress any key to exit..." -ForegroundColor Gray
+try {
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+} catch {}
+

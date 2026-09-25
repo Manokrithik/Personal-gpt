@@ -208,37 +208,40 @@ cd PersonalGPT
 cp .env.example .env
 ```
 
-### Step 2: One-Click Development Launch (Windows)
-Open PowerShell in the `PersonalGPT` directory and run:
+### Step 2: Run Unified Full-Stack App (Recommended)
+You can run the entire unified application (backend + prebuilt frontend) with a single command:
+```bash
+python run.py
+```
+Then navigate to **`http://localhost:8000`** in your browser.
+- **Web UI & Chat**: `http://localhost:8000`
+- **Swagger API Docs**: `http://localhost:8000/docs`
+- **System Health**: `http://localhost:8000/api/v1/health`
+
+### Step 3: Development Mode (Hot-Reloading)
+For active development with hot-reloading:
+
+**Windows PowerShell (One-Click):**
 ```powershell
 .\run_dev.ps1
 ```
-This automatically boots the FastAPI backend on `http://127.0.0.1:8000` and launches the Vite frontend on `http://localhost:5173`.
 
-### Step 3: Manual Execution (Alternative)
-
-**Backend:**
-```bash
-cd backend
-python -m venv .venv
-
-# Windows Powershell
-.venv\Scripts\Activate.ps1
-# Linux / macOS
-source .venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Visit **`http://localhost:5173`** in your browser.
+**Or run backend and frontend separately:**
+- **Backend:**
+  ```bash
+  cd backend
+  python -m venv .venv
+  .venv\Scripts\Activate.ps1   # or source .venv/bin/activate
+  pip install -r requirements.txt
+  uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+  ```
+- **Frontend:**
+  ```bash
+  cd frontend
+  npm install
+  npm run dev
+  ```
+  Visit `http://localhost:5173` for the Vite dev server with proxy to backend.
 
 ---
 

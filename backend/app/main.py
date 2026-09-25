@@ -88,6 +88,36 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 # Include API Router
 app.include_router(api_router)
 
-@app.get("/", include_in_schema=False)
-async def root():
-    return RedirectResponse(url="/docs")
+# Mount Frontend Production Build (Unifying Frontend and Backend)
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+# Locate frontend dist directory (works from repo root or backend dir)
+possible_dist_dirs = [
+    Path(__file__).resolve().parent.parent.parent / "frontend" / "dist",
+    Path("./frontend/dist").resolve(),
+    Path("../frontend/dist").resolve(),
+]
+frontend_dist = next((p for p in possible_dist_dirs if p.exists() and (p / "index.html").exists()), None)
+
+if frontend_dist:
+    logger.info(f"Serving unified frontend from {frontend_dist}")
+    assets_dir = frontend_dist / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="static_assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        # Don't intercept API or docs routes
+        if full_path.startswith("api/") or full_path in ["docs", "redoc", "openapi.json"]:
+            return JSONResponse(status_code=404, content={"message": "Not Found"})
+        target_file = frontend_dist / full_path
+        if target_file.is_file():
+            return FileResponse(target_file)
+        return FileResponse(frontend_dist / "index.html")
+else:
+    logger.warning("Frontend dist directory not found. Access API documentation at /docs.")
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return RedirectResponse(url="/docs")

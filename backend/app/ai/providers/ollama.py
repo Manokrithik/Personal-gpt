@@ -74,12 +74,13 @@ class OllamaProvider(BaseLLMProvider):
                 data = res.json()
                 return data.get("message", {}).get("content", "")
         except httpx.ConnectError:
-            last_user = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "Hello!")
+            from app.ai.providers.offline_engine import OfflineEngine
+            resp = OfflineEngine.generate_response(messages)
             return (
-                f"💡 **Ollama Offline Notice**: Ollama is not currently running at `{self.base_url}`.\n\n"
-                f"To run local models without API keys, install and launch Ollama from https://ollama.ai (`ollama serve`).\n\n"
-                f"---\n\n"
-                f"**PersonalGPT Local Response**: I received your request: \"{last_user}\". All internal systems, RAG knowledge stores, and memory profiles are active."
+                f"{resp}\n\n"
+                f"---\n"
+                f"> 💡 *Operating on PersonalGPT Built-in Offline Engine. "
+                f"To connect live local models like Llama 3.2, launch Ollama (`ollama serve`) or configure API keys in Settings.*"
             )
         except Exception as e:
             raise LLMProviderException(str(e), provider="ollama")
@@ -113,18 +114,8 @@ class OllamaProvider(BaseLLMProvider):
                         except json.JSONDecodeError:
                             continue
         except httpx.ConnectError:
-            import asyncio
-            last_user = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "Hello!")
-            fallback_text = (
-                f"💡 **Ollama Offline Notice**: Ollama is not currently detected at `{self.base_url}`.\n\n"
-                f"To run local models without an internet connection or API keys, install and start Ollama from [ollama.ai](https://ollama.ai).\n\n"
-                f"---\n\n"
-                f"**PersonalGPT Local Response**:\n\n"
-                f"I processed your query: *\"{last_user}\"*.\n\n"
-                f"All local systems (Database, Memory, RAG Knowledge Index, and Tool execution) are fully operational."
-            )
-            for word in fallback_text.split(" "):
-                await asyncio.sleep(0.015)
-                yield word + " "
+            from app.ai.providers.offline_engine import OfflineEngine
+            async for token in OfflineEngine.stream_response(messages):
+                yield token
         except Exception as e:
             raise LLMProviderException(str(e), provider="ollama")

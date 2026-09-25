@@ -25,19 +25,10 @@ class MockProvider(BaseLLMProvider):
         ]
 
     async def generate(self, messages: List[Dict[str, str]], **kwargs) -> str:
-        last_user = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "Hello!")
-        return f"PersonalGPT (Mock): I received your message: '{last_user}'. All systems are operating smoothly."
+        from app.ai.providers.offline_engine import OfflineEngine
+        return OfflineEngine.generate_response(messages)
 
     async def stream(self, messages: List[Dict[str, str]], **kwargs) -> AsyncIterator[str]:
-        last_user = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "Hello!")
-        response = (
-            f"Hello! I am PersonalGPT operating in high-performance mode.\n\n"
-            f"You asked: **{last_user}**.\n\n"
-            f"I have verified your memory context, RAG knowledge stores, and tool execution registry. "
-            f"How can I assist you further today?"
-        )
-        # Yield in realistic word chunks
-        words = response.split(" ")
-        for i, word in enumerate(words):
-            await asyncio.sleep(0.02)  # Tiny pause to simulate realistic token streaming
-            yield word + (" " if i < len(words) - 1 else "")
+        from app.ai.providers.offline_engine import OfflineEngine
+        async for token in OfflineEngine.stream_response(messages):
+            yield token

@@ -3,11 +3,20 @@ import { useChatStore } from '../store/chatStore';
 import { useModelStore } from '../store/modelStore';
 import { MessageItem } from '../components/chat/MessageItem';
 import { ChatInput } from '../components/chat/ChatInput';
-import { Bot, Sparkles, BookOpen, Brain, Shield, ChevronDown } from 'lucide-react';
+import { WelcomeHero } from '../components/chat/WelcomeHero';
+import { ChevronDown, Sparkles } from 'lucide-react';
 
 export const ChatPage: React.FC = () => {
-  const { messages, isStreaming, streamingMessageId, activeConversationId, conversations } = useChatStore();
-  const { models, currentModel, selectModel } = useModelStore();
+  const {
+    messages,
+    isStreaming,
+    streamingMessageId,
+    activeConversationId,
+    conversations,
+    sendMessage,
+    setCameraModalOpen,
+  } = useChatStore();
+  const { models, currentModel, currentProvider, selectModel } = useModelStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find((c) => c.id === activeConversationId);
@@ -22,11 +31,16 @@ export const ChatPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-screen bg-background relative overflow-hidden">
       {/* Top Header */}
-      <header className="h-14 border-b border-border/60 px-6 flex items-center justify-between bg-card/40 backdrop-blur-md z-10">
-        <div className="flex items-center gap-3">
-          <h2 className="text-sm font-semibold text-foreground truncate max-w-sm">
+      <header className="h-14 border-b border-border/50 px-4 sm:px-6 flex items-center justify-between bg-card/50 backdrop-blur-xl z-10 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="System Ready" />
+          <h2 className="text-sm font-semibold text-foreground truncate max-w-xs sm:max-w-sm">
             {activeConv?.title || 'Personal Assistant'}
           </h2>
+          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-muted-foreground bg-secondary/60 border border-border/40">
+            <Sparkles className="w-2.5 h-2.5 text-primary" />
+            AI Online
+          </span>
         </div>
 
         {/* Model Selector Pill */}
@@ -38,7 +52,7 @@ export const ChatPage: React.FC = () => {
                 const targetModel = models.find((m) => m.id === e.target.value);
                 selectModel(e.target.value, targetModel?.provider);
               }}
-              className="appearance-none bg-secondary/60 hover:bg-secondary border border-border/60 text-xs font-mono py-1.5 pl-3 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground transition-colors"
+              className="appearance-none bg-secondary/70 hover:bg-secondary border border-border/60 text-xs font-mono py-1.5 pl-3 pr-8 rounded-xl cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground transition-all shadow-xs"
             >
               {models.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -51,36 +65,18 @@ export const ChatPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Messages Scroll Area */}
+      {/* Messages Scroll Area / Unique Opening Interface */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto divide-y divide-border/20">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
-              <Bot className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-base text-foreground">How can I help you today?</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                PersonalGPT runs privately with local or cloud models, integrated long-term memory, RAG document knowledge, and tool execution.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5 w-full text-left pt-2">
-              <div className="p-3 rounded-lg bg-secondary/30 border border-border/40 text-xs space-y-1">
-                <div className="font-medium text-foreground flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5 text-primary" /> RAG Knowledge
-                </div>
-                <p className="text-[11px] text-muted-foreground">Upload PDFs or docs to ground responses in your private data.</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-secondary/30 border border-border/40 text-xs space-y-1">
-                <div className="font-medium text-foreground flex items-center gap-1.5">
-                  <Brain className="w-3.5 h-3.5 text-primary" /> Long-Term Memory
-                </div>
-                <p className="text-[11px] text-muted-foreground">Remembers user preferences, workflows, and facts across chats.</p>
-              </div>
-            </div>
-          </div>
+          <WelcomeHero
+            onSelectPrompt={(prompt) => {
+              sendMessage(prompt, {
+                model: currentModel,
+                provider: currentProvider,
+              });
+            }}
+            onOpenCamera={() => setCameraModalOpen(true)}
+          />
         ) : (
           messages.map((m) => (
             <MessageItem

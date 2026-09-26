@@ -10,6 +10,7 @@ interface ChatState {
   isStreaming: boolean;
   streamingMessageId: string | null;
   abortController: AbortController | null;
+  isCameraModalOpen: boolean;
 
   fetchConversations: () => Promise<void>;
   selectConversation: (id: string) => Promise<void>;
@@ -17,6 +18,7 @@ interface ChatState {
   deleteConversation: (id: string) => Promise<void>;
   updateConversationTitle: (id: string, title: string) => Promise<void>;
   togglePinConversation: (id: string, is_pinned: boolean) => Promise<void>;
+  setCameraModalOpen: (open: boolean) => void;
   sendMessage: (
     text: string,
     options?: {
@@ -41,6 +43,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isStreaming: false,
   streamingMessageId: null,
   abortController: null,
+  isCameraModalOpen: false,
+
+  setCameraModalOpen: (open: boolean) => set({ isCameraModalOpen: open }),
 
   fetchConversations: async () => {
     try {

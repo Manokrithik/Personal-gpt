@@ -24,7 +24,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { isStreaming, sendMessage, stopGeneration } = useChatStore();
+  const { isStreaming, sendMessage, stopGeneration, isCameraModalOpen, setCameraModalOpen } = useChatStore();
   const { currentModel, currentProvider } = useModelStore();
   const { uploadFile } = useKnowledgeStore();
 
@@ -135,14 +135,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
   return (
     <div className="p-4 bg-background/80 backdrop-blur-md border-t border-border/50 max-w-4xl mx-auto w-full">
       <CameraModal
-        isOpen={isCameraOpen}
-        onClose={() => setIsCameraOpen(false)}
+        isOpen={isCameraOpen || isCameraModalOpen}
+        onClose={() => {
+          setIsCameraOpen(false);
+          setCameraModalOpen(false);
+        }}
         onCapture={(base64, mimeType) => {
           setAttachedImage({
             base64,
             mimeType,
             previewUrl: `data:${mimeType};base64,${base64}`,
           });
+          setIsCameraOpen(false);
+          setCameraModalOpen(false);
         }}
       />
 

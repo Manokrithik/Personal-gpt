@@ -8,7 +8,7 @@ from app.core.logging import get_logger
 logger = get_logger("provider.gemini")
 
 class GeminiProvider(BaseLLMProvider):
-    def __init__(self, api_key: str = "", default_model: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str = "", default_model: str = "gemini-3.6-flash"):
         self.api_key = api_key
         self.default_model = default_model
 
@@ -18,20 +18,36 @@ class GeminiProvider(BaseLLMProvider):
     async def list_models(self) -> List[ModelInfo]:
         return [
             ModelInfo(
-                id="gemini-1.5-flash",
-                name="gemini-1.5-flash",
+                id="gemini-3.6-flash",
+                name="gemini-3.6-flash",
                 provider="gemini",
                 is_local=False,
                 context_length=1000000,
-                description="Google Gemini 1.5 Flash (High speed, multimodal)"
+                description="Google Gemini 3.6 Flash (High speed, multimodal, state-of-the-art)"
             ),
             ModelInfo(
-                id="gemini-1.5-pro",
-                name="gemini-1.5-pro",
+                id="gemini-flash-latest",
+                name="gemini-flash-latest",
+                provider="gemini",
+                is_local=False,
+                context_length=1000000,
+                description="Google Gemini Flash Latest"
+            ),
+            ModelInfo(
+                id="gemini-3.7-flash",
+                name="gemini-3.7-flash",
+                provider="gemini",
+                is_local=False,
+                context_length=1000000,
+                description="Google Gemini 3.7 Flash"
+            ),
+            ModelInfo(
+                id="gemini-2.5-pro",
+                name="gemini-2.5-pro",
                 provider="gemini",
                 is_local=False,
                 context_length=2000000,
-                description="Google Gemini 1.5 Pro (Complex reasoning)"
+                description="Google Gemini 2.5 Pro (Complex reasoning)"
             ),
         ]
 
@@ -52,35 +68,44 @@ class GeminiProvider(BaseLLMProvider):
             return OfflineEngine.generate_response(messages)
 
         raw_model = kwargs.get("model") or self.default_model
-        # Sanitize model name: ensure valid Gemini model
-        model = self.default_model if not raw_model or not raw_model.lower().startswith("gemini") else raw_model
+        # Sanitize model name: ensure valid modern Gemini model
+        if not raw_model or not raw_model.lower().startswith("gemini") or "1.5" in raw_model:
+            model = self.default_model
+        else:
+            model = raw_model
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
+        candidates_to_try = []
+        for m in [model, "gemini-3.6-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"]:
+            if m and m not in candidates_to_try:
+                candidates_to_try.append(m)
+
         payload = {
             "contents": self._convert_messages(messages),
             "generationConfig": {
                 "temperature": kwargs.get("temperature", 0.7),
             }
         }
+
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                res = await client.post(url, json=payload)
-                if res.status_code == 200:
-                    data = res.json()
-                    return data["candidates"][0]["content"]["parts"][0]["text"]
+            async with httpx.AsyncClient(timeout=45.0) as client:
 
-                # If requested model had an issue, fallback to gemini-1.5-flash
-                if model != "gemini-1.5-flash":
-                    logger.warning(f"Model {model} returned status {res.status_code}. Retrying with gemini-1.5-flash...")
-                    fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
-                    res2 = await client.post(fallback_url, json=payload)
-                    if res2.status_code == 200:
-                        data2 = res2.json()
-                        return data2["candidates"][0]["content"]["parts"][0]["text"]
+                for candidate_model in candidates_to_try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{candidate_model}:generateContent?key={self.api_key}"
+                    res = await client.post(url, json=payload)
+                    if res.status_code == 200:
+                        data = res.json()
+                        candidates = data.get("candidates", [])
+                        if candidates and "content" in candidates[0]:
+                            parts = candidates[0]["content"].get("parts", [])
+                            if parts and "text" in parts[0]:
+                                return parts[0]["text"]
 
-                logger.warning(f"Gemini API returned {res.status_code}: {res.text}. Falling back to OfflineEngine.")
+                    logger.warning(f"Gemini model {candidate_model} returned HTTP {res.status_code}. Trying next model...")
+
+                logger.warning(f"All Gemini models returned non-200. Falling back to OfflineEngine.")
                 from app.ai.providers.offline_engine import OfflineEngine
                 return OfflineEngine.generate_response(messages)
+
         except Exception as e:
             logger.warning(f"Gemini provider exception: {e}. Falling back to OfflineEngine.")
             from app.ai.providers.offline_engine import OfflineEngine

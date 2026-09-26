@@ -35,8 +35,8 @@ class Settings(BaseSettings):
 
     @property
     def effective_default_model(self) -> str:
-        if self.LLM_PROVIDER == "gemini" and (not self.DEFAULT_MODEL or self.DEFAULT_MODEL == "llama3.2:1b"):
-            return "gemini-1.5-flash"
+        if self.LLM_PROVIDER == "gemini" and (not self.DEFAULT_MODEL or self.DEFAULT_MODEL in ["llama3.2:1b", "gemini-1.5-flash"]):
+            return "gemini-3.6-flash"
         return self.DEFAULT_MODEL
 
     # Ollama Local
@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o-mini"
 
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-1.5-flash"
+    GEMINI_MODEL: str = "gemini-3.6-flash"
 
     ANTHROPIC_API_KEY: str = ""
     ANTHROPIC_MODEL: str = "claude-3-5-sonnet-20241022"

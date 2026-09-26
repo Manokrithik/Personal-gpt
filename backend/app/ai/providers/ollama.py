@@ -67,13 +67,14 @@ class OllamaProvider(BaseLLMProvider):
             }
         }
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            timeout_cfg = httpx.Timeout(60.0, connect=3.0)
+            async with httpx.AsyncClient(timeout=timeout_cfg) as client:
                 res = await client.post(f"{self.base_url}/api/chat", json=payload)
                 if res.status_code != 200:
                     raise LLMProviderException(f"Ollama returned {res.status_code}: {res.text}", provider="ollama")
                 data = res.json()
                 return data.get("message", {}).get("content", "")
-        except httpx.ConnectError:
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.TimeoutException, httpx.NetworkError):
             from app.ai.providers.offline_engine import OfflineEngine
             resp = OfflineEngine.generate_response(messages)
             return (
@@ -96,7 +97,8 @@ class OllamaProvider(BaseLLMProvider):
             }
         }
         try:
-            async with httpx.AsyncClient(timeout=120.0) as client:
+            timeout_cfg = httpx.Timeout(120.0, connect=3.0)
+            async with httpx.AsyncClient(timeout=timeout_cfg) as client:
                 async with client.stream("POST", f"{self.base_url}/api/chat", json=payload) as response:
                     if response.status_code != 200:
                         err = await response.aread()
@@ -113,7 +115,7 @@ class OllamaProvider(BaseLLMProvider):
                                 break
                         except json.JSONDecodeError:
                             continue
-        except httpx.ConnectError:
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.TimeoutException, httpx.NetworkError):
             from app.ai.providers.offline_engine import OfflineEngine
             async for token in OfflineEngine.stream_response(messages):
                 yield token

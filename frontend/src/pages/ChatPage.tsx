@@ -34,7 +34,10 @@ export const ChatPage: React.FC = () => {
           <div className="relative">
             <select
               value={currentModel}
-              onChange={(e) => selectModel(e.target.value)}
+              onChange={(e) => {
+                const targetModel = models.find((m) => m.id === e.target.value);
+                selectModel(e.target.value, targetModel?.provider);
+              }}
               className="appearance-none bg-secondary/60 hover:bg-secondary border border-border/60 text-xs font-mono py-1.5 pl-3 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground transition-colors"
             >
               {models.map((m) => (

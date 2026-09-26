@@ -7,7 +7,8 @@ Write-Host "         Launching PersonalGPT               " -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
 
 $python = "$root\backend\.venv\Scripts\python.exe"
-$node = "C:\Users\^_^\AppData\Local\Programs\NodeJS\node.exe"
+$nodeCmd = Get-Command node -ErrorAction SilentlyContinue
+$node = if ($nodeCmd) { $nodeCmd.Source } else { "node" }
 
 # 1. Start Backend in background process
 Write-Host "[1/2] Launching Backend on http://localhost:8000..." -ForegroundColor Green

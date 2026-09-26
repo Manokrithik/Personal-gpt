@@ -33,19 +33,20 @@ class ModelService:
 
     async def select_model(self, model: str, provider: str = None) -> ModelInfo:
         await self.settings_repo.set("selected_model", model)
-        if provider:
-            await self.settings_repo.set("selected_provider", provider)
-
         all_models = await self.registry.list_all_models()
         match = next((m for m in all_models if m.id == model), None)
+        effective_provider = provider or (match.provider if match else self.config.LLM_PROVIDER)
+        await self.settings_repo.set("selected_provider", effective_provider)
+
         if not match:
             match = ModelInfo(
                 id=model,
                 name=model,
-                provider=provider or self.config.LLM_PROVIDER,
+                provider=effective_provider,
                 is_local=True,
                 is_selected=True
             )
         else:
+            match.provider = effective_provider
             match.is_selected = True
         return match

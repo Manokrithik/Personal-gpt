@@ -25,6 +25,9 @@ class MockProvider(BaseLLMProvider):
         ]
 
     async def generate(self, messages: List[Dict[str, str]], **kwargs) -> str:
+        last_user = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "Hello!")
+        if "Hello PersonalGPT" in last_user:
+            return f"PersonalGPT (Mock): I received your message: '{last_user}'. All systems are operating smoothly."
         from app.ai.providers.offline_engine import OfflineEngine
         return OfflineEngine.generate_response(messages)
 

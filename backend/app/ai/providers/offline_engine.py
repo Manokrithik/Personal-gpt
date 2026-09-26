@@ -88,10 +88,35 @@ class OfflineEngine:
         return ""
 
     @classmethod
+    def _extract_tool_results(cls, messages: List[Dict[str, str]]) -> str:
+        for m in messages:
+            if m.get("role") == "system":
+                content = m.get("content", "")
+                if "[Recent Tool Execution Results]:" in content:
+                    return content.split("[Recent Tool Execution Results]:")[-1].strip()
+        return ""
+
+    @classmethod
     def generate_response(cls, messages: List[Dict[str, str]]) -> str:
         query = cls._extract_user_query(messages)
         query_lower = query.lower()
         rag_context = cls._extract_rag_context(messages)
+        tool_results_text = cls._extract_tool_results(messages)
+
+        # 0. Tool results if agent tool was executed
+        if tool_results_text:
+            if "calculator" in tool_results_text and "'result':" in tool_results_text:
+                res_match = re.search(r"'result':\s*([0-9\.\-]+)", tool_results_text)
+                exp_match = re.search(r"'expression':\s*'([^']+)'", tool_results_text)
+                if res_match and exp_match:
+                    return f"### 🧮 Calculation Result\n\n**{exp_match.group(1)} = {res_match.group(1)}**\n\nThe calculation was completed using the built-in mathematical engine."
+                elif res_match:
+                    return f"### 🧮 Calculation Result\n\n**Result: {res_match.group(1)}**"
+            elif "clock" in tool_results_text or "time" in tool_results_text.lower():
+                time_match = re.search(r"'(?:current_time|time)':\s*'([^']+)'", tool_results_text)
+                if time_match:
+                    return f"### 🕒 Live Clock\n\n**Current Date & Time:** `{time_match.group(1)}`"
+            return f"### ⚙️ Tool Execution Output\n\n{tool_results_text}\n\nOperation completed successfully."
 
         # 1. RAG query response if context was retrieved
         if rag_context and any(kw in query_lower for kw in ["document", "file", "uploaded", "summary", "read", "according"]):

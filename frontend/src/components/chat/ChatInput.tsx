@@ -28,6 +28,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
   const { currentModel, currentProvider } = useModelStore();
   const { uploadFile } = useKnowledgeStore();
 
+  const cameraFileInputRef = useRef<HTMLInputElement>(null);
+
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
@@ -35,6 +37,50 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
     }
   }, [input]);
+
+  // Support clipboard image pasting (Ctrl+V screenshot/photo)
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            const base64 = result.replace(/^data:image\/[a-z]+;base64,/, '');
+            setAttachedImage({
+              base64,
+              mimeType: file.type || 'image/jpeg',
+              previewUrl: result,
+            });
+          };
+          reader.readAsDataURL(file);
+          e.preventDefault();
+          break;
+        }
+      }
+    }
+  };
+
+  const handleDirectCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.replace(/^data:image\/[a-z]+;base64,/, '');
+        setAttachedImage({
+          base64,
+          mimeType: file.type || 'image/jpeg',
+          previewUrl: result,
+        });
+      };
+      reader.readAsDataURL(file);
+      if (cameraFileInputRef.current) cameraFileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -78,6 +124,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  const quickQuestionSuggestions = [
+    'What is this?',
+    'Solve this problem',
+    'Explain in detail',
+    'Extract text',
+  ];
 
   return (
     <div className="p-4 bg-background/80 backdrop-blur-md border-t border-border/50 max-w-4xl mx-auto w-full">
@@ -137,29 +190,46 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
           </div>
         </div>
 
-        {/* Attached Scanned Image Preview */}
+        {/* Attached Scanned Image Preview & Question Quick-Chips */}
         {attachedImage && (
-          <div className="mx-1 mt-2 mb-1 flex items-center gap-3 p-2 bg-primary/5 border border-primary/30 rounded-xl">
-            <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-border shadow-sm shrink-0 bg-secondary">
-              <img src={attachedImage.previewUrl} alt="Camera scan preview" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                <Scan className="w-3.5 h-3.5 text-primary" />
-                <span>Visual Scan Attached</span>
+          <div className="mx-1 mt-2 mb-2 p-2.5 bg-primary/10 border border-primary/30 rounded-xl space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-border shadow-sm shrink-0 bg-secondary">
+                <img src={attachedImage.previewUrl} alt="Camera scan preview" className="w-full h-full object-cover" />
               </div>
-              <p className="text-[11px] text-muted-foreground truncate">
-                Ready for AI visual scan and search analysis
-              </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                  <Scan className="w-3.5 h-3.5 text-primary" />
+                  <span>Camera Photo Captured</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  Ready. Ask your question below and click Send.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAttachedImage(null)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Remove photo"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setAttachedImage(null)}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-              title="Remove scanned image"
-            >
-              <X className="w-4 h-4" />
-            </button>
+
+            {/* Quick Question Suggestions */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-primary/20">
+              <span className="text-[10px] text-muted-foreground font-medium">Quick questions:</span>
+              {quickQuestionSuggestions.map((prompt, pIdx) => (
+                <button
+                  key={pIdx}
+                  type="button"
+                  onClick={() => setInput(prompt)}
+                  className="px-2 py-0.5 rounded-full bg-secondary/80 hover:bg-primary/20 hover:text-primary border border-border/50 text-[10px] text-foreground font-medium transition-colors"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -169,24 +239,35 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={attachedImage ? "Add an optional question about this scan, or press Enter to search..." : "Ask PersonalGPT anything, scan with camera, or perform tasks..."}
+          onPaste={handlePaste}
+          placeholder={attachedImage ? "Type your question about this photo (e.g., 'What is this?', 'Solve this problem')..." : "Ask PersonalGPT anything, scan with camera, or perform tasks..."}
           rows={1}
           className="w-full bg-transparent px-2 pt-2 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none max-h-44 leading-relaxed"
         />
 
         {/* Footer Actions */}
         <div className="flex items-center justify-between pt-2 px-1">
-          <div className="flex items-center gap-1.5">
-            {/* Camera Scan Button */}
+          <div className="flex items-center gap-2">
+            {/* Prominent Camera Option */}
             <button
               type="button"
               onClick={() => setIsCameraOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-medium transition-colors shadow-sm"
-              title="Open Camera for visual scan and search"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary border border-primary/35 text-xs font-semibold transition-all shadow-sm active:scale-95"
+              title="Access Camera: Take photo or scan document/question"
             >
               <Camera className="w-4 h-4" />
-              <span className="font-semibold">Scan</span>
+              <span>Camera</span>
             </button>
+
+            {/* Hidden Direct Device Camera Input */}
+            <input
+              type="file"
+              ref={cameraFileInputRef}
+              onChange={handleDirectCameraCapture}
+              className="hidden"
+              accept="image/*"
+              capture="environment"
+            />
 
             {/* Document Upload Button */}
             <input
@@ -225,7 +306,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
                 type="submit"
                 disabled={!input.trim() && !attachedImage}
                 className="p-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-all shadow-sm"
-                title="Send message or scan"
+                title="Send question & photo"
               >
                 <Send className="w-4 h-4" />
               </button>

@@ -118,6 +118,10 @@ class ChatService:
 
         # 7. Select Provider & Generate
         provider_name = req.provider or await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
+        if req.image_data and provider_name != "gemini":
+            provider_name = "gemini"
+            model = "gemini-3.6-flash"
+
         await self._ensure_provider_keys(provider_name)
         provider = self.registry.get_provider(provider_name)
 
@@ -215,6 +219,10 @@ class ChatService:
         )
 
         provider_name = req.provider or await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
+        if req.image_data and provider_name != "gemini":
+            provider_name = "gemini"
+            model = "gemini-3.6-flash"
+
         await self._ensure_provider_keys(provider_name)
         provider = self.registry.get_provider(provider_name)
 

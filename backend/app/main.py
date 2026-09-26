@@ -115,7 +115,14 @@ if frontend_dist:
         target_file = frontend_dist / full_path
         if target_file.is_file():
             return FileResponse(target_file)
-        return FileResponse(frontend_dist / "index.html")
+        return FileResponse(
+            frontend_dist / "index.html",
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
 else:
     logger.warning("Frontend dist directory not found. Access API documentation at /docs.")
     @app.get("/", include_in_schema=False)

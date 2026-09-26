@@ -11,6 +11,7 @@ interface ChatState {
   streamingMessageId: string | null;
   abortController: AbortController | null;
   isCameraModalOpen: boolean;
+  isMobileSidebarOpen: boolean;
 
   fetchConversations: () => Promise<void>;
   selectConversation: (id: string) => Promise<void>;
@@ -19,6 +20,7 @@ interface ChatState {
   updateConversationTitle: (id: string, title: string) => Promise<void>;
   togglePinConversation: (id: string, is_pinned: boolean) => Promise<void>;
   setCameraModalOpen: (open: boolean) => void;
+  setMobileSidebarOpen: (open: boolean) => void;
   sendMessage: (
     text: string,
     options?: {
@@ -44,8 +46,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   streamingMessageId: null,
   abortController: null,
   isCameraModalOpen: false,
+  isMobileSidebarOpen: false,
 
   setCameraModalOpen: (open: boolean) => set({ isCameraModalOpen: open }),
+  setMobileSidebarOpen: (open: boolean) => set({ isMobileSidebarOpen: open }),
 
   fetchConversations: async () => {
     try {
@@ -61,7 +65,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   selectConversation: async (id: string) => {
-    set({ activeConversationId: id, isLoading: true });
+    set({ activeConversationId: id, isLoading: true, isMobileSidebarOpen: false });
     try {
       const conv = await chatService.getConversation(id);
       set({ messages: conv.messages || [], isLoading: false });
@@ -78,6 +82,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         conversations: [conv, ...state.conversations],
         activeConversationId: conv.id,
         messages: [],
+        isMobileSidebarOpen: false,
       }));
       return conv.id;
     } catch (e) {

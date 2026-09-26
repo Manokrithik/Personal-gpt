@@ -4,7 +4,7 @@ import { useModelStore } from '../store/modelStore';
 import { MessageItem } from '../components/chat/MessageItem';
 import { ChatInput } from '../components/chat/ChatInput';
 import { WelcomeHero } from '../components/chat/WelcomeHero';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown, Sparkles, Menu } from 'lucide-react';
 
 export const ChatPage: React.FC = () => {
   const {
@@ -15,6 +15,7 @@ export const ChatPage: React.FC = () => {
     conversations,
     sendMessage,
     setCameraModalOpen,
+    setMobileSidebarOpen,
   } = useChatStore();
   const { models, currentModel, currentProvider, selectModel } = useModelStore();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -29,12 +30,22 @@ export const ChatPage: React.FC = () => {
   }, [messages, isStreaming]);
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-background relative overflow-hidden">
+    <div className="flex-1 flex flex-col h-[100dvh] bg-background relative overflow-hidden">
       {/* Top Header */}
-      <header className="h-14 border-b border-border/50 px-4 sm:px-6 flex items-center justify-between bg-card/50 backdrop-blur-xl z-10 shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="System Ready" />
-          <h2 className="text-sm font-semibold text-foreground truncate max-w-xs sm:max-w-sm">
+      <header className="h-14 border-b border-border/50 px-3 sm:px-6 flex items-center justify-between bg-card/50 backdrop-blur-xl z-10 shadow-xs">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          {/* Mobile Hamburger Menu Toggle (Android / Small Screens) */}
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(true)}
+            className="md:hidden p-2 -ml-1 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary active:scale-95 transition-all"
+            title="Open conversations and menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="System Ready" />
+          <h2 className="text-sm font-semibold text-foreground truncate max-w-[140px] xs:max-w-xs sm:max-w-sm">
             {activeConv?.title || 'Personal Assistant'}
           </h2>
           <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-muted-foreground bg-secondary/60 border border-border/40">

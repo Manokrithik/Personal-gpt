@@ -38,12 +38,16 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
       return;
     }
 
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const idealWidth = isPortrait ? 1080 : 1920;
+    const idealHeight = isPortrait ? 1920 : 1080;
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: mode },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: idealWidth },
+          height: { ideal: idealHeight },
         },
         audio: false,
       });
@@ -134,7 +138,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/90 backdrop-blur-md animate-fade-in">
       {/* Hidden canvas for snapshot rendering */}
       <canvas ref={canvasRef} className="hidden" />
 
@@ -148,9 +152,9 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
         className="hidden"
       />
 
-      <div className="relative w-full max-w-xl bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-w-xl bg-card border-0 sm:border border-white/10 rounded-none sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-secondary/50">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-secondary/50 pt-safe">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
               <Camera className="w-4 h-4" />

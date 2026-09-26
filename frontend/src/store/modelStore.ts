@@ -14,8 +14,8 @@ interface ModelState {
 
 export const useModelStore = create<ModelState>((set) => ({
   models: [],
-  currentModel: 'llama3.2:1b',
-  currentProvider: 'ollama',
+  currentModel: 'gemini-1.5-flash',
+  currentProvider: 'gemini',
   isLoading: false,
 
   fetchModels: async () => {

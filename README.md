@@ -4,6 +4,17 @@
 
 **A Private, Modular, and Extensible Personal AI Assistant Platform**
 
+<p align="center">
+  <a href="https://codespaces.new/Manokrithik/Personal-gpt">
+    <img src="https://img.shields.io/badge/🚀_CLICK_TO_OPEN_APP-GITHUB_CODESPACES-007ACC?style=for-the-badge&logo=github" alt="Launch App in Codespaces" />
+  </a>
+  <a href="https://render.com/deploy?repo=https://github.com/Manokrithik/Personal-gpt">
+    <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" />
+  </a>
+</p>
+
+### 📱 [Click Here to Open App (Local Host: http://localhost:8000)](http://localhost:8000)
+
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 [![React 18](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg)](https://react.dev/)
@@ -13,6 +24,7 @@
 *Run local open-weight models (via Ollama) with 100% data privacy and zero API keys, or seamlessly connect cloud LLMs (OpenAI, Gemini, Anthropic) through a unified provider abstraction.*
 
 </div>
+
 
 ---
 

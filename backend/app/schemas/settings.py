@@ -11,6 +11,8 @@ class SettingsUpdate(BaseModel):
     enable_agents: Optional[bool] = None
     max_context_tokens: Optional[int] = None
     theme: Optional[str] = None  # dark, light, system
+    gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
 
 class SystemHealthResponse(BaseModel):
     status: str

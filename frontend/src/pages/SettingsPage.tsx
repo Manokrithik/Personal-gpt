@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Brain, Sliders, Moon, Sun, Trash2, Shield, Plus, Check } from 'lucide-react';
+import { Settings as SettingsIcon, Brain, Sliders, Moon, Sun, Trash2, Shield, Plus, Check, Key, Cloud, Eye, EyeOff, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
 
 export const SettingsPage: React.FC = () => {
@@ -16,6 +16,11 @@ export const SettingsPage: React.FC = () => {
   } = useSettingsStore();
 
   const [temp, setTemp] = useState(0.7);
+  const [geminiKey, setGeminiKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [showGemini, setShowGemini] = useState(false);
+  const [showOpenai, setShowOpenai] = useState(false);
+  const [keysSaved, setKeysSaved] = useState(false);
   const [newMemoryText, setNewMemoryText] = useState('');
   const [newMemoryType, setNewMemoryType] = useState('preference');
 
@@ -27,8 +32,20 @@ export const SettingsPage: React.FC = () => {
   useEffect(() => {
     if (settings) {
       setTemp(settings.temperature);
+      if (settings.gemini_api_key) setGeminiKey(settings.gemini_api_key);
+      if (settings.openai_api_key) setOpenaiKey(settings.openai_api_key);
     }
   }, [settings]);
+
+  const handleSaveKeys = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await updateSettings({
+      gemini_api_key: geminiKey.trim(),
+      openai_api_key: openaiKey.trim(),
+    });
+    setKeysSaved(true);
+    setTimeout(() => setKeysSaved(false), 3000);
+  };
 
   const handleSaveTemperature = (newVal: number) => {
     setTemp(newVal);
@@ -133,8 +150,126 @@ export const SettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Section: Cloud AI Providers & API Keys */}
+      <div className="bg-card/40 border border-border/60 rounded-xl p-5 space-y-4">
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Cloud className="w-4 h-4 text-primary" />
+            <h3>Cloud AI Providers & API Keys</h3>
+          </div>
+          {keysSaved && (
+            <span className="flex items-center gap-1 text-xs text-emerald-500 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Keys Saved
+            </span>
+          )}
+        </div>
+
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Optionally connect cloud LLMs to unlock state-of-the-art models like Google Gemini and OpenAI GPT. Keys are stored safely in your local environment.
+        </p>
+
+        <form onSubmit={handleSaveKeys} className="space-y-4 pt-1">
+          {/* Google Gemini */}
+          <div className="space-y-1.5 p-3.5 rounded-lg border border-border/50 bg-secondary/20">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                Google Gemini API Key
+              </label>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  geminiKey.trim() 
+                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                    : 'bg-muted text-muted-foreground border-border/40'
+                }`}>
+                  {geminiKey.trim() ? 'Configured' : 'Offline Engine'}
+                </span>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-primary hover:underline flex items-center gap-0.5"
+                >
+                  Get Free Key <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type={showGemini ? 'text' : 'password'}
+                placeholder="AIzaSy..."
+                value={geminiKey}
+                onChange={(e) => setGeminiKey(e.target.value)}
+                className="w-full px-3 py-1.5 pr-8 text-xs font-mono rounded-lg bg-secondary/40 border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowGemini(!showGemini)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showGemini ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* OpenAI */}
+          <div className="space-y-1.5 p-3.5 rounded-lg border border-border/50 bg-secondary/20">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                OpenAI API Key
+              </label>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  openaiKey.trim() 
+                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                    : 'bg-muted text-muted-foreground border-border/40'
+                }`}>
+                  {openaiKey.trim() ? 'Configured' : 'Offline Engine'}
+                </span>
+                <a
+                  href="https://platform.openai.com/api-keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-primary hover:underline flex items-center gap-0.5"
+                >
+                  Get Key <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type={showOpenai ? 'text' : 'password'}
+                placeholder="sk-..."
+                value={openaiKey}
+                onChange={(e) => setOpenaiKey(e.target.value)}
+                className="w-full px-3 py-1.5 pr-8 text-xs font-mono rounded-lg bg-secondary/40 border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowOpenai(!showOpenai)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showOpenai ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <button
+              type="submit"
+              className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 flex items-center gap-1.5 transition-all shadow-sm"
+            >
+              <Key className="w-3.5 h-3.5" /> Save Cloud API Keys
+            </button>
+          </div>
+        </form>
+      </div>
+
       {/* Section 2: Long-Term Memory */}
       <div className="bg-card/40 border border-border/60 rounded-xl p-5 space-y-4">
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Brain className="w-4 h-4 text-primary" />

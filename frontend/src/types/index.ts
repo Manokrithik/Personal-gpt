@@ -70,6 +70,10 @@ export interface AppSettings {
   enable_agents: boolean;
   max_context_tokens: number;
   theme: string;
+  gemini_api_key?: string;
+  openai_api_key?: string;
+  has_gemini_key?: boolean;
+  has_openai_key?: boolean;
 }
 
 export interface SystemHealth {

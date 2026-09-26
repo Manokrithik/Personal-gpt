@@ -49,6 +49,20 @@ class ChatService:
         conv = await self.conv_repo.create(title=title, model=model)
         return conv.id, model
 
+    async def _ensure_provider_keys(self, provider_name: str):
+        if provider_name.lower() == "gemini":
+            gemini_key = await self.settings_repo.get("gemini_api_key") or self.config.GEMINI_API_KEY
+            if gemini_key:
+                prov = self.registry.get_provider("gemini")
+                if hasattr(prov, "api_key"):
+                    prov.api_key = gemini_key
+        elif provider_name.lower() == "openai":
+            openai_key = await self.settings_repo.get("openai_api_key") or self.config.OPENAI_API_KEY
+            if openai_key:
+                prov = self.registry.get_provider("openai")
+                if hasattr(prov, "api_key"):
+                    prov.api_key = openai_key
+
     async def process_chat(self, req: ChatRequest) -> ChatResponse:
         conv_id, model = await self._resolve_conversation(req)
         
@@ -100,7 +114,9 @@ class ChatService:
 
         # 7. Select Provider & Generate
         provider_name = req.provider or await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
+        await self._ensure_provider_keys(provider_name)
         provider = self.registry.get_provider(provider_name)
+
         
         assistant_content = await provider.generate(
             assembled_messages,
@@ -189,6 +205,7 @@ class ChatService:
         )
 
         provider_name = req.provider or await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
+        await self._ensure_provider_keys(provider_name)
         provider = self.registry.get_provider(provider_name)
 
         collected_content = []

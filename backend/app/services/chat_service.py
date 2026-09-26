@@ -36,11 +36,16 @@ class ChatService:
         if req.conversation_id:
             conv = await self.conv_repo.get_by_id(req.conversation_id, load_messages=False)
             if conv:
-                return conv.id, (req.model or conv.model)
+                conv_model = req.model or conv.model
+                if self.config.LLM_PROVIDER == "gemini" and not conv_model.lower().startswith("gemini"):
+                    conv_model = "gemini-1.5-flash"
+                return conv.id, conv_model
         
         # Create new conversation with title derived from user message
         title = req.message[:30] + ("..." if len(req.message) > 30 else "")
-        model = req.model or await self.settings_repo.get("selected_model", self.config.DEFAULT_MODEL)
+        model = req.model or await self.settings_repo.get("selected_model", self.config.effective_default_model)
+        if self.config.LLM_PROVIDER == "gemini" and not model.lower().startswith("gemini"):
+            model = "gemini-1.5-flash"
         conv = await self.conv_repo.create(title=title, model=model)
         return conv.id, model
 

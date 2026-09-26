@@ -48,7 +48,8 @@ class GeminiProvider(BaseLLMProvider):
     async def generate(self, messages: List[Dict[str, str]], **kwargs) -> str:
         if not self.api_key:
             raise LLMProviderException("GEMINI_API_KEY is not configured.", provider="gemini")
-        model = kwargs.get("model") or self.default_model
+        raw_model = kwargs.get("model") or self.default_model
+        model = self.default_model if not raw_model or not raw_model.lower().startswith("gemini") else raw_model
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
         payload = {
             "contents": self._convert_messages(messages),

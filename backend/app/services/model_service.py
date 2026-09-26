@@ -12,8 +12,13 @@ class ModelService:
         self.config = get_settings()
 
     async def list_models(self) -> ModelListResponse:
-        current_model = await self.settings_repo.get("selected_model", self.config.DEFAULT_MODEL)
+        default_model = "gemini-1.5-flash" if self.config.LLM_PROVIDER == "gemini" else self.config.DEFAULT_MODEL
+        current_model = await self.settings_repo.get("selected_model", default_model)
         current_provider = await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
+
+        # Auto-align model if provider is gemini
+        if current_provider == "gemini" and not current_model.lower().startswith("gemini"):
+            current_model = "gemini-1.5-flash"
 
         all_models = await self.registry.list_all_models()
         # Mark selected

@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "ollama"  # ollama, openai, gemini, anthropic, mock
     DEFAULT_MODEL: str = "llama3.2:1b"
 
+    @property
+    def effective_default_model(self) -> str:
+        if self.LLM_PROVIDER == "gemini" and (not self.DEFAULT_MODEL or self.DEFAULT_MODEL == "llama3.2:1b"):
+            return "gemini-1.5-flash"
+        return self.DEFAULT_MODEL
+
     # Ollama Local
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3.2:1b"

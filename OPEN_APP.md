@@ -10,10 +10,16 @@
 
 ---
 
-### Option 1: ☁️ Open Instantly in Cloud (No Installation Needed)
+### Option 1: 🌐 Open Live Web App (Any Device - Phone / Tablet / PC)
+👉 **[CLICK TO OPEN PERSONALGPT: https://personal-gpt-v47o.onrender.com](https://personal-gpt-v47o.onrender.com)**
+
+*No installation required! Works directly in your browser on iOS, Android, macOS, and Windows with Google Gemini AI.*
+
+---
+
+### Option 2: ☁️ Open in GitHub Codespaces
 👉 **[CLICK HERE TO LAUNCH ON GITHUB CODESPACES](https://codespaces.new/Manokrithik/Personal-gpt)**
 
-*Clicking the link above starts a cloud container, boots the backend & frontend, and **automatically opens the PersonalGPT web app directly in your browser**.*
 
 ---
 

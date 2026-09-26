@@ -11,13 +11,16 @@ class ChatCitation(BaseModel):
 
 class ChatRequest(BaseModel):
     conversation_id: Optional[str] = None
-    message: str = Field(..., min_length=1)
+    message: Optional[str] = Field(default="", min_length=0)
+    image_data: Optional[str] = None
+    image_mime_type: Optional[str] = "image/jpeg"
     model: Optional[str] = None
     provider: Optional[str] = None
     use_rag: bool = True
     use_memory: bool = True
     use_tools: bool = True
     temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0)
+
 
 class ChatResponse(BaseModel):
     conversation_id: str

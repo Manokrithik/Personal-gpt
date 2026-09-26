@@ -176,6 +176,35 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
           )}
         </div>
 
+        {/* Scanned / Uploaded Image */}
+        {message.extra_metadata?.image_data && (
+          <div className="mb-2">
+            <div className="relative inline-block max-w-xs sm:max-w-sm rounded-xl overflow-hidden border border-border shadow-sm bg-secondary/40">
+              <img
+                src={
+                  message.extra_metadata.image_data.startsWith('data:')
+                    ? message.extra_metadata.image_data
+                    : `data:${message.extra_metadata.image_mime_type || 'image/jpeg'};base64,${message.extra_metadata.image_data}`
+                }
+                alt="Visual scan"
+                className="max-h-56 sm:max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                onClick={() => {
+                  const src = message.extra_metadata?.image_data.startsWith('data:')
+                    ? message.extra_metadata.image_data
+                    : `data:${message.extra_metadata?.image_mime_type || 'image/jpeg'};base64,${message.extra_metadata?.image_data}`;
+                  const win = window.open();
+                  if (win) {
+                    win.document.write(`<img src="${src}" style="max-width:100%; height:auto;" />`);
+                  }
+                }}
+              />
+              <div className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-medium text-white flex items-center gap-1">
+                📷 Scanned Image
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <div className="text-sm text-foreground/90 font-normal">
           {renderFormattedContent(message.content)}

@@ -66,12 +66,16 @@ class ChatService:
     async def process_chat(self, req: ChatRequest) -> ChatResponse:
         conv_id, model = await self._resolve_conversation(req)
         
-        # 1. Save user turn
+        # 1. Save user turn with image if provided
+        user_msg = req.message or ("Scan and analyze this image." if req.image_data else "")
+        user_meta = {"image_data": req.image_data, "image_mime_type": req.image_mime_type} if req.image_data else None
+
         await self.msg_repo.create(
             conversation_id=conv_id,
             role="user",
-            content=req.message,
+            content=user_msg,
             model=model,
+            extra_metadata=user_meta,
         )
         await self.conv_repo.touch(conv_id)
 
@@ -82,21 +86,21 @@ class ChatService:
         # 3. Memories
         memories = []
         if req.use_memory and self.config.ENABLE_MEMORY:
-            memories = await self.memory_manager.get_relevant_memories(req.message)
+            memories = await self.memory_manager.get_relevant_memories(user_msg)
 
         # 4. RAG
         citations = []
         rag_context = ""
         if req.use_rag and self.config.ENABLE_RAG:
-            search_results = await self.retriever.retrieve(req.message, top_k=4)
+            search_results = await self.retriever.retrieve(user_msg, top_k=4)
             if search_results:
                 citations = self.retriever.format_citations(search_results)
                 rag_context = self.retriever.format_context_string(search_results)
 
         # 5. Tools & Agents
         tool_results = []
-        if req.use_tools and self.config.ENABLE_TOOLS:
-            agent_eval = await self.agent_manager.evaluate_and_execute(req.message)
+        if req.use_tools and self.config.ENABLE_TOOLS and not req.image_data:
+            agent_eval = await self.agent_manager.evaluate_and_execute(user_msg)
             if agent_eval:
                 tool_results.append(agent_eval)
 
@@ -109,7 +113,7 @@ class ChatService:
         assembled_messages = self.prompt_manager.assemble_messages(
             system_message=system_msg,
             history=history,
-            current_user_message=req.message,
+            current_user_message=user_msg,
         )
 
         # 7. Select Provider & Generate
@@ -117,12 +121,14 @@ class ChatService:
         await self._ensure_provider_keys(provider_name)
         provider = self.registry.get_provider(provider_name)
 
-        
         assistant_content = await provider.generate(
             assembled_messages,
             model=model,
             temperature=req.temperature or 0.7,
+            image_data=req.image_data,
+            image_mime_type=req.image_mime_type,
         )
+
 
         # 8. Save assistant message
         citation_dicts = [c.model_dump() for c in citations] if citations else None
@@ -153,12 +159,16 @@ class ChatService:
     async def stream_chat(self, req: ChatRequest) -> AsyncIterator[str]:
         conv_id, model = await self._resolve_conversation(req)
 
-        # Save user turn
+        # Save user turn with image if provided
+        user_msg = req.message or ("Scan and analyze this image." if req.image_data else "")
+        user_meta = {"image_data": req.image_data, "image_mime_type": req.image_mime_type} if req.image_data else None
+
         await self.msg_repo.create(
             conversation_id=conv_id,
             role="user",
-            content=req.message,
+            content=user_msg,
             model=model,
+            extra_metadata=user_meta,
         )
         await self.conv_repo.touch(conv_id)
 
@@ -169,21 +179,21 @@ class ChatService:
         # Memories
         memories = []
         if req.use_memory and self.config.ENABLE_MEMORY:
-            memories = await self.memory_manager.get_relevant_memories(req.message)
+            memories = await self.memory_manager.get_relevant_memories(user_msg)
 
         # RAG
         citations = []
         rag_context = ""
         if req.use_rag and self.config.ENABLE_RAG:
-            search_results = await self.retriever.retrieve(req.message, top_k=4)
+            search_results = await self.retriever.retrieve(user_msg, top_k=4)
             if search_results:
                 citations = self.retriever.format_citations(search_results)
                 rag_context = self.retriever.format_context_string(search_results)
 
         # Tools & Agents
         tool_results = []
-        if req.use_tools and self.config.ENABLE_TOOLS:
-            agent_eval = await self.agent_manager.evaluate_and_execute(req.message)
+        if req.use_tools and self.config.ENABLE_TOOLS and not req.image_data:
+            agent_eval = await self.agent_manager.evaluate_and_execute(user_msg)
             if agent_eval:
                 tool_results.append(agent_eval)
                 # Yield immediate tool notification chunk
@@ -201,7 +211,7 @@ class ChatService:
         assembled_messages = self.prompt_manager.assemble_messages(
             system_message=system_msg,
             history=history,
-            current_user_message=req.message,
+            current_user_message=user_msg,
         )
 
         provider_name = req.provider or await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
@@ -213,11 +223,14 @@ class ChatService:
             async for token in provider.stream(
                 assembled_messages,
                 model=model,
-                temperature=req.temperature or 0.7
+                temperature=req.temperature or 0.7,
+                image_data=req.image_data,
+                image_mime_type=req.image_mime_type,
             ):
                 collected_content.append(token)
                 chunk_data = json.dumps({"delta": token, "done": False})
                 yield f"data: {chunk_data}\n\n"
+
 
         except Exception as e:
             logger.error(f"Error in LLM stream: {e}", exc_info=True)

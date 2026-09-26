@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, AsyncIterator
+from typing import List, Dict, Any, AsyncIterator, Optional
 import httpx
 from app.ai.providers.base import BaseLLMProvider
 from app.schemas.models import ModelInfo
@@ -51,13 +51,33 @@ class GeminiProvider(BaseLLMProvider):
             ),
         ]
 
-    def _convert_messages(self, messages: List[Dict[str, str]]):
+    def _convert_messages(self, messages: List[Dict[str, str]], image_data: Optional[str] = None, image_mime_type: Optional[str] = "image/jpeg"):
         contents = []
-        for msg in messages:
+        for i, msg in enumerate(messages):
             role = "user" if msg["role"] in ["user", "system"] else "model"
+            parts = []
+
+            # If image_data is provided, attach inlineData to the last user turn
+            if i == len(messages) - 1 and image_data and role == "user":
+                clean_b64 = image_data
+                if "," in image_data:
+                    clean_b64 = image_data.split(",", 1)[1]
+                parts.append({
+                    "inlineData": {
+                        "mimeType": image_mime_type or "image/jpeg",
+                        "data": clean_b64
+                    }
+                })
+
+            text_content = msg.get("content", "")
+            if text_content:
+                parts.append({"text": text_content})
+            elif not parts:
+                parts.append({"text": "Scan and analyze this image in detail. Extract any text, explain what you see, or answer any question shown."})
+
             contents.append({
                 "role": role,
-                "parts": [{"text": msg["content"]}]
+                "parts": parts
             })
         return contents
 
@@ -79,12 +99,16 @@ class GeminiProvider(BaseLLMProvider):
             if m and m not in candidates_to_try:
                 candidates_to_try.append(m)
 
+        image_data = kwargs.get("image_data")
+        image_mime_type = kwargs.get("image_mime_type") or "image/jpeg"
+
         payload = {
-            "contents": self._convert_messages(messages),
+            "contents": self._convert_messages(messages, image_data=image_data, image_mime_type=image_mime_type),
             "generationConfig": {
                 "temperature": kwargs.get("temperature", 0.7),
             }
         }
+
 
         try:
             async with httpx.AsyncClient(timeout=45.0) as client:

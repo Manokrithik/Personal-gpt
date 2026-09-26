@@ -37,6 +37,8 @@ export const chatService = {
     payload: {
       conversation_id?: string;
       message: string;
+      image_data?: string;
+      image_mime_type?: string;
       model?: string;
       provider?: string;
       use_rag?: boolean;
@@ -44,6 +46,7 @@ export const chatService = {
       use_tools?: boolean;
       temperature?: number;
     },
+
     callbacks: ChatStreamCallbacks,
     abortSignal?: AbortSignal
   ) => {

@@ -17,9 +17,21 @@ interface ChatState {
   deleteConversation: (id: string) => Promise<void>;
   updateConversationTitle: (id: string, title: string) => Promise<void>;
   togglePinConversation: (id: string, is_pinned: boolean) => Promise<void>;
-  sendMessage: (text: string, options?: { model?: string; provider?: string; use_rag?: boolean; use_memory?: boolean; use_tools?: boolean }) => Promise<void>;
+  sendMessage: (
+    text: string,
+    options?: {
+      model?: string;
+      provider?: string;
+      use_rag?: boolean;
+      use_memory?: boolean;
+      use_tools?: boolean;
+      image_data?: string;
+      image_mime_type?: string;
+    }
+  ) => Promise<void>;
   stopGeneration: () => void;
 }
+
 
 export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
@@ -124,6 +136,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       role: 'user',
       content: text,
       created_at: new Date().toISOString(),
+      extra_metadata: options.image_data ? { image_data: options.image_data, image_mime_type: options.image_mime_type } : undefined,
     };
 
     const tempAssistantMsg: Message = {
@@ -152,6 +165,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         use_rag: options.use_rag ?? true,
         use_memory: options.use_memory ?? true,
         use_tools: options.use_tools ?? true,
+        image_data: options.image_data,
+        image_mime_type: options.image_mime_type,
       },
       {
         onToken: (token) => {

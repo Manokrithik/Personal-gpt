@@ -81,13 +81,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
       <div className="p-4 border-b border-border/50">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold shadow-sm">
-              <ShieldCheck className="w-5 h-5 text-primary" />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-cyan-400 p-[1.5px] shadow-sm">
+              <div className="w-full h-full rounded-[10px] bg-card flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+              </div>
             </div>
             <div>
-              <h1 className="font-semibold text-sm tracking-tight text-foreground flex items-center gap-1.5">
+              <h1 className="font-bold text-sm tracking-tight text-foreground flex items-center gap-1.5">
                 PersonalGPT
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25">
                   Private
                 </span>
               </h1>
@@ -96,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
           
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-1.5 rounded-md hover:bg-accent/80 text-muted-foreground transition-colors"
+            className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
             title="Toggle theme"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -108,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             onSelectTab('chat');
             newChat();
           }}
-          className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground font-medium text-xs flex items-center justify-center gap-2 shadow-sm hover:opacity-95 transition-opacity"
+          className="w-full py-2.5 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           New Conversation

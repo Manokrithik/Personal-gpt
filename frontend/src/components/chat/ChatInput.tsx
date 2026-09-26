@@ -151,14 +151,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
         }}
       />
 
-      <form onSubmit={handleSubmit} className="relative bg-secondary/40 border border-border/80 rounded-xl p-2.5 shadow-sm focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
+      <form onSubmit={handleSubmit} className="relative glass-card border border-white/10 rounded-2xl p-3 shadow-xl focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
         {/* Context Feature Pills */}
-        <div className="flex items-center gap-1.5 pb-2 px-1 border-b border-border/40 text-[11px]">
+        <div className="flex items-center gap-1.5 pb-2.5 px-1 border-b border-white/5 text-[11px]">
           <button
             type="button"
             onClick={() => setUseRag(!useRag)}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${
-              useRag ? 'bg-primary/10 border-primary/30 text-primary font-medium' : 'border-transparent text-muted-foreground/60 hover:text-muted-foreground'
+            className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full border transition-all ${
+              useRag ? 'bg-primary/20 border-primary/40 text-primary font-semibold shadow-xs' : 'border-transparent text-muted-foreground/60 hover:text-muted-foreground'
             }`}
             title="Toggle RAG document retrieval"
           >
@@ -169,8 +169,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
           <button
             type="button"
             onClick={() => setUseMemory(!useMemory)}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${
-              useMemory ? 'bg-primary/10 border-primary/30 text-primary font-medium' : 'border-transparent text-muted-foreground/60 hover:text-muted-foreground'
+            className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full border transition-all ${
+              useMemory ? 'bg-purple-500/20 border-purple-500/40 text-purple-400 font-semibold shadow-xs' : 'border-transparent text-muted-foreground/60 hover:text-muted-foreground'
             }`}
             title="Toggle Long-Term Memory context"
           >
@@ -181,8 +181,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
           <button
             type="button"
             onClick={() => setUseTools(!useTools)}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${
-              useTools ? 'bg-primary/10 border-primary/30 text-primary font-medium' : 'border-transparent text-muted-foreground/60 hover:text-muted-foreground'
+            className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full border transition-all ${
+              useTools ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 font-semibold shadow-xs' : 'border-transparent text-muted-foreground/60 hover:text-muted-foreground'
             }`}
             title="Toggle agentic tool calling (Calculator, File Search, etc.)"
           >
@@ -247,20 +247,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
           onPaste={handlePaste}
           placeholder={attachedImage ? "Type your question about this photo (e.g., 'What is this?', 'Solve this problem')..." : "Ask PersonalGPT anything, scan with camera, or perform tasks..."}
           rows={1}
-          className="w-full bg-transparent px-2 pt-2 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none max-h-44 leading-relaxed"
+          className="w-full bg-transparent px-2 pt-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none max-h-44 leading-relaxed"
         />
 
         {/* Footer Actions */}
         <div className="flex items-center justify-between pt-2 px-1">
           <div className="flex items-center gap-2">
-            {/* Prominent Camera Option */}
+            {/* Prominent Neon Cyan Camera Option */}
             <button
               type="button"
               onClick={() => setIsCameraOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary border border-primary/35 text-xs font-semibold transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 border border-cyan-500/30 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
               title="Access Camera: Take photo or scan document/question"
             >
-              <Camera className="w-4 h-4" />
+              <Camera className="w-4 h-4 text-cyan-400" />
               <span>Camera</span>
             </button>
 
@@ -285,13 +285,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent/80 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-colors"
               title="Attach document to Knowledge Base (.pdf, .txt, .docx, .md, .csv)"
             >
               <Paperclip className="w-4 h-4" />
             </button>
 
-            <span className="text-[11px] font-mono text-muted-foreground/70 px-2 py-0.5 rounded bg-secondary/80 border border-border/40">
+            <span className="text-[11px] font-mono text-muted-foreground/70 px-2.5 py-0.5 rounded-lg bg-secondary/70 border border-white/5">
               {currentModel}
             </span>
           </div>
@@ -301,7 +301,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
               <button
                 type="button"
                 onClick={stopGeneration}
-                className="p-2 rounded-lg bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity"
+                className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 transition-all cursor-pointer"
                 title="Stop generation"
               >
                 <Square className="w-4 h-4" />
@@ -310,7 +310,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
               <button
                 type="submit"
                 disabled={!input.trim() && !attachedImage}
-                className="p-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-all shadow-sm"
+                className="p-2.5 rounded-xl bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-500 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-md shadow-primary/20 active:scale-95 cursor-pointer"
                 title="Send question & photo"
               >
                 <Send className="w-4 h-4" />

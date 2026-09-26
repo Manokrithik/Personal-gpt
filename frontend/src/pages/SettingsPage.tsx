@@ -287,7 +287,7 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         <p className="text-xs text-muted-foreground leading-relaxed">
-          PersonalGPT automatically records key preferences, facts, and workflow constraints mentioned in chat turns to personalize future responses.
+          MUmu AI automatically records key preferences, facts, and workflow constraints mentioned in chat turns to personalize future responses.
         </p>
 
         {/* Add Memory Manually */}
@@ -323,7 +323,7 @@ export const SettingsPage: React.FC = () => {
         <div className="space-y-1.5 max-h-56 overflow-y-auto pt-2">
           {memories.length === 0 ? (
             <div className="text-center py-4 text-xs text-muted-foreground/60">
-              No memories recorded yet. Talk to PersonalGPT or add one above!
+              No memories recorded yet. Talk to MUmu AI or add one above!
             </div>
           ) : (
             memories.map((mem) => (

@@ -1,5 +1,5 @@
-# 🚀 Open & Launch PersonalGPT
-
+# 🚀 Open & Launch MUmu AI
+ 
 <div align="center">
 
 ### Click either of the links below to open the application:
@@ -11,9 +11,10 @@
 ---
 
 ### Option 1: 🌐 Open Live Web App (Any Device - Phone / Tablet / PC)
-👉 **[CLICK TO OPEN PERSONALGPT: https://personal-gpt-v47o.onrender.com](https://personal-gpt-v47o.onrender.com)**
+👉 **[CLICK TO OPEN MUMU AI: https://personal-gpt-v47o.onrender.com](https://personal-gpt-v47o.onrender.com)**
 
 *✨ Features active on live app:*
+- 🎨 **AI Image Generation**: Ask MUmu AI to generate any image and view, expand, or download it instantly.
 - 📷 **Live Camera Scan & Search**: Point camera at math, science questions, or documents to scan & solve.
 - ⚡ **Step-by-Step Clarity**: Every answer broken down into neat, numbered steps.
 - 🌌 **2026 Obsidian Glass UI**: High-contrast dark mode with aurora ambient glow and launchpad cards.

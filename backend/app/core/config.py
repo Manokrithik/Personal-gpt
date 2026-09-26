@@ -11,7 +11,7 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
-    APP_NAME: str = "PersonalGPT"
+    APP_NAME: str = "MUmu AI"
     APP_ENV: str = "development"
     DEBUG: bool = True
 

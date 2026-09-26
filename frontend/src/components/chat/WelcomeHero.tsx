@@ -9,7 +9,8 @@ import {
   ShieldCheck,
   Zap,
   CheckCircle2,
-  Compass
+  Compass,
+  Palette
 } from 'lucide-react';
 
 interface WelcomeHeroProps {
@@ -28,6 +29,12 @@ export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onSelectPrompt, onOpen
 
   const samplePrompts = [
     {
+      icon: '🎨',
+      title: 'AI Image Generation',
+      badge: 'Flux Studio',
+      prompt: 'Generate an image of a cybernetic tiger walking through a futuristic neon Tokyo street in the rain.',
+    },
+    {
       icon: '📐',
       title: 'Math Equation',
       badge: 'Step-by-Step',
@@ -38,12 +45,6 @@ export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onSelectPrompt, onOpen
       title: 'Biology & Science',
       badge: 'Clear Stages',
       prompt: 'Explain how photosynthesis works step-by-step in simple, understandable terms.',
-    },
-    {
-      icon: '⚛️',
-      title: 'Quantum Physics',
-      badge: 'Easy Analogy',
-      prompt: 'Explain quantum computing using an easy real-world analogy in neat numbered steps.',
     },
     {
       icon: '💻',
@@ -66,9 +67,9 @@ export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onSelectPrompt, onOpen
 
         <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-secondary/80 border border-white/10 text-xs font-medium shadow-sm backdrop-blur-md">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-foreground font-semibold">PersonalGPT Modern AI</span>
+          <span className="text-foreground font-semibold">MUmu AI Modern Studio</span>
           <span className="text-muted-foreground/60">•</span>
-          <span className="text-primary font-mono text-[11px]">Private Engine</span>
+          <span className="text-primary font-mono text-[11px]">Multimodal & Image AI</span>
         </div>
       </div>
 
@@ -77,13 +78,12 @@ export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onSelectPrompt, onOpen
         <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-[1.15]">
           {getGreeting()},{' '}
           <span className="text-gradient">
-            what shall we solve today?
+            what shall we create today?
           </span>
         </h1>
 
         <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto font-normal">
-          PersonalGPT understands your questions and delivers <strong className="text-foreground font-semibold">neat, step-by-step</strong> answers. 
-          Use the camera to scan problems, or type any request below.
+          MUmu AI generates images on demand, scans real-world problems with camera, and delivers <strong className="text-foreground font-semibold">neat, step-by-step</strong> answers tailored to your needs.
         </p>
       </div>
 
@@ -149,32 +149,32 @@ export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onSelectPrompt, onOpen
           </div>
         </div>
 
-        {/* Card 3: RAG Knowledge Base */}
+        {/* Card 3: AI Image Studio */}
         <div
-          onClick={() => onSelectPrompt('Summarize the key insights and facts from my uploaded knowledge base documents.')}
+          onClick={() => onSelectPrompt('Generate an image of a cybernetic tiger in a futuristic neon Tokyo street at night')}
           className="glass-card group relative p-5 rounded-2xl cursor-pointer hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
         >
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all pointer-events-none" />
           <div className="space-y-3">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-sm group-hover:scale-110 transition-transform">
-              <BookOpen className="w-5 h-5" />
+              <Palette className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-foreground group-hover:text-purple-400 transition-colors">
-                  Knowledge Base & Docs
+                  AI Image Studio
                 </h3>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  RAG
+                  Image Gen
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                Ground answers in your private PDFs, research papers, and notes with verified source citations.
+                Generate high-resolution photorealistic and artistic images directly tailored to your creative visual prompts.
               </p>
             </div>
           </div>
           <div className="pt-4 flex items-center text-xs font-bold text-purple-400 group-hover:translate-x-1 transition-transform">
-            <span>Query Documents</span>
+            <span>Create AI Image</span>
             <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
           </div>
         </div>

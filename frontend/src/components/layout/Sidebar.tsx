@@ -88,9 +88,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             </div>
             <div>
               <h1 className="font-bold text-sm tracking-tight text-foreground flex items-center gap-1.5">
-                PersonalGPT
+                MUmu AI
                 <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25">
-                  Private
+                  AI Studio
                 </span>
               </h1>
             </div>

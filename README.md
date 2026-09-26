@@ -1,12 +1,12 @@
-# PersonalGPT
+# MUmu AI
 
 <div align="center">
 
-**A Private, Modular, and Extensible Personal AI Assistant Platform**
+**MUmu AI — Multimodal, Intelligent, and Extensible Personal AI Assistant Platform**
 
 <p align="center">
   <a href="https://personal-gpt-v47o.onrender.com">
-    <img src="https://img.shields.io/badge/🌐_OPEN_LIVE_WEB_APP-PERSONALGPT-blue?style=for-the-badge&logo=googlechrome" alt="Open Live Web App" />
+    <img src="https://img.shields.io/badge/🌐_OPEN_LIVE_WEB_APP-MUMU_AI-blue?style=for-the-badge&logo=googlechrome" alt="Open Live Web App" />
   </a>
   <a href="https://codespaces.new/Manokrithik/Personal-gpt">
     <img src="https://img.shields.io/badge/🚀_LAUNCH_IN_CLOUD-CODESPACES-007ACC?style=for-the-badge&logo=github" alt="Launch in Codespaces" />
@@ -54,10 +54,12 @@
 
 ## 1. Product Overview
 
-PersonalGPT is designed from the ground up as a private personal AI workstation. Unlike consumer chatbots that store conversations on third-party servers, PersonalGPT stores all conversation histories, user memory profiles, and ingested knowledge documents locally on your machine.
+MUmu AI is designed from the ground up as an intelligent, multimodal personal AI workstation. Unlike consumer chatbots that store conversations on third-party servers, MUmu AI stores all conversation histories, user memory profiles, and ingested knowledge documents locally on your machine.
 
 ### Key Capabilities
+- **🎨 AI Image Studio**: Generate stunning, high-resolution (1024×1024 HD) photorealistic and artistic images on demand based on user descriptions, with instant download and full-screen view.
 - **📷 Camera Scan & Visual Search**: Instant camera capture (desktop webcam or mobile rear/front camera) to scan and solve math problems, inspect documents, decipher handwritten notes, or analyze real-world objects using multimodal vision.
+- **⚡ Step-by-Step Clarity**: Understands all user questions and provides clean, organized, numbered step-by-step explanations with readable math (no confusing LaTeX symbols).
 - **✨ Step-by-Step Understandable Explanations**: Clean, structured, step-by-step walkthroughs for every question (whether typed or scanned) with readable unicode math (no messy LaTeX dollar signs).
 - **🌌 2026 Obsidian Glassmorphism UI**: High-contrast dark mode with aurora ambient gradients, interactive capability launchpads, quick-inspiration prompt chips, and smooth micro-animations.
 - **🔒 Private Conversational AI**: Stream tokens with low latency via Server-Sent Events (SSE).

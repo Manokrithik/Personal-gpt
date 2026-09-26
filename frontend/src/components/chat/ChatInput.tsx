@@ -245,7 +245,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenFileUpload }) => {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          placeholder={attachedImage ? "Type your question about this photo (e.g., 'What is this?', 'Solve this problem')..." : "Ask PersonalGPT anything, scan with camera, or perform tasks..."}
+          placeholder={attachedImage ? "Type your question about this photo (e.g., 'What is this?', 'Solve this problem')..." : "Ask MUmu AI anything, scan with camera, generate images..."}
           rows={1}
           className="w-full bg-transparent px-2 pt-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none max-h-44 leading-relaxed"
         />

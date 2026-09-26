@@ -46,7 +46,7 @@ export const ChatPage: React.FC = () => {
 
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="System Ready" />
           <h2 className="text-sm font-semibold text-foreground truncate max-w-[140px] xs:max-w-xs sm:max-w-sm">
-            {activeConv?.title || 'Personal Assistant'}
+            {activeConv?.title || 'MUmu AI Assistant'}
           </h2>
           <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-muted-foreground bg-secondary/60 border border-border/40">
             <Sparkles className="w-2.5 h-2.5 text-primary" />

@@ -4,6 +4,7 @@ from app.ai.tools.calculator import CalculatorTool
 from app.ai.tools.date_time import DateTimeTool
 from app.ai.tools.file_search import FileSearchTool
 from app.ai.tools.knowledge_search import KnowledgeSearchTool
+from app.ai.tools.image_generation import ImageGenerationTool
 from app.core.logging import get_logger
 
 logger = get_logger("tools.registry")
@@ -18,6 +19,7 @@ class ToolRegistry:
         self.register(DateTimeTool())
         self.register(FileSearchTool())
         self.register(KnowledgeSearchTool())
+        self.register(ImageGenerationTool())
 
     def register(self, tool: BaseTool):
         self._tools[tool.name] = tool

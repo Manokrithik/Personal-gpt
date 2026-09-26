@@ -33,8 +33,8 @@ async def lifespan(app: FastAPI):
     logger.info(f"Shutting down {settings.APP_NAME}...")
 
 app = FastAPI(
-    title="PersonalGPT API",
-    description="Private, Modular, Extensible Personal AI Platform API",
+    title="MUmu AI API",
+    description="Multimodal, Intelligent, Extensible Personal AI Platform API",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",

@@ -52,19 +52,20 @@ TOPICS = {
     "rag": (
         "### 📚 Retrieval-Augmented Generation (RAG)\n\n"
         "**RAG** connects large language models to your private documents without retraining the model.\n\n"
-        "Here is the 3-step pipeline used inside PersonalGPT:\n"
+        "Here is the 3-step pipeline used inside MUmu AI:\n"
         "1. **Ingest & Chunk**: Documents (PDF, Word, Text, Markdown) are split into semantically coherent text chunks.\n"
         "2. **Vector Index**: Each chunk is converted into high-dimensional numerical vectors (embeddings) stored in our local vector database.\n"
-        "3. **Search & Ground**: When you ask a question, PersonalGPT retrieves the top matching passages and feeds them into the prompt with source citations."
+        "3. **Search & Ground**: When you ask a question, MUmu AI retrieves the top matching passages and feeds them into the prompt with source citations."
     ),
-    "personalgpt": (
-        "### 🛡️ About PersonalGPT\n\n"
-        "**PersonalGPT** is an open, private personal AI workstation designed to run on your local hardware.\n\n"
-        "- **Privacy First**: All conversations, memories, documents, and database records remain strictly on your machine.\n"
+    "mumu_ai": (
+        "### 🛡️ About MUmu AI\n\n"
+        "**MUmu AI** is an advanced, multimodal, and private AI platform designed for high performance.\n\n"
+        "- **Multimodal Vision & Camera**: Live camera scanning and visual problem solving in neat, step-by-step clarity.\n"
+        "- **AI Image Generation**: Direct on-demand image creation from text descriptions based on your needs.\n"
         "- **Dual-Tier Memory**: Tracks your immediate conversation window while extracting persistent long-term preferences.\n"
         "- **Local Vector Store**: Built-in RAG engine for document search without external cloud dependencies.\n"
-        "- **Safe Agent Tools**: Safe math evaluator, live date/time, and filesystem knowledge search.\n"
-        "- **Provider Agnostic**: Seamlessly switches between local Ollama models and cloud APIs (OpenAI, Gemini)."
+        "- **Safe Agent Tools**: Accurate arithmetic evaluator, live date/time, and intelligent planning.\n"
+        "- **Provider Agnostic**: Seamlessly switches between Google Gemini, local Ollama models, and cloud APIs."
     )
 }
 
@@ -105,11 +106,26 @@ class OfflineEngine:
 
         # 0. Tool results if agent tool was executed
         if tool_results_text:
-            if "calculator" in tool_results_text and "'result':" in tool_results_text:
+            if "image_generation" in tool_results_text:
+                url_match = re.search(r"'(?:image_url|url)':\s*'([^']+)'", tool_results_text)
+                prompt_match = re.search(r"'prompt':\s*'([^']+)'", tool_results_text)
+                prompt_desc = prompt_match.group(1) if prompt_match else "your requested artwork"
+                if url_match:
+                    image_url = url_match.group(1)
+                    return (
+                        f"### 🎨 MUmu AI Image Studio\n\n"
+                        f"Here is your generated image based on your needs:\n\n"
+                        f"![{prompt_desc}]({image_url})\n\n"
+                        f"#### 📋 Step-by-Step Overview:\n"
+                        f"1. **Concept**: Rendered artwork focusing on *\"{prompt_desc}\"*.\n"
+                        f"2. **Aesthetics**: High-resolution generation with rich color harmonies and detailed composition.\n"
+                        f"3. **Actions**: Click the image to view in full resolution or use the download button to save it locally."
+                    )
+            elif "calculator" in tool_results_text and "'result':" in tool_results_text:
                 res_match = re.search(r"'result':\s*([0-9\.\-]+)", tool_results_text)
                 exp_match = re.search(r"'expression':\s*'([^']+)'", tool_results_text)
                 if res_match and exp_match:
-                    return f"### 🧮 Calculation Result\n\n**{exp_match.group(1)} = {res_match.group(1)}**\n\nThe calculation was completed using the built-in mathematical engine."
+                    return f"### 🧮 Calculation Result\n\n**{exp_match.group(1)} = {res_match.group(1)}**\n\nThe calculation was completed step-by-step using the built-in mathematical engine."
                 elif res_match:
                     return f"### 🧮 Calculation Result\n\n**Result: {res_match.group(1)}**"
             elif "clock" in tool_results_text or "time" in tool_results_text.lower():
@@ -118,7 +134,25 @@ class OfflineEngine:
                     return f"### 🕒 Live Clock\n\n**Current Date & Time:** `{time_match.group(1)}`"
             return f"### ⚙️ Tool Execution Output\n\n{tool_results_text}\n\nOperation completed successfully."
 
-        # 1. RAG query response if context was retrieved
+        # 1. Direct Image Generation query fallback
+        img_match = re.search(r'(?:generate|create|draw|paint|render)\s+(?:an?\s+)?(?:image|picture|photo|artwork)?(?:\s+of)?\s+(.+)', query, re.IGNORECASE)
+        if img_match and not any(k in query_lower for k in ["code", "function", "table", "diagram", "chart"]):
+            raw_prompt = img_match.group(1).strip()
+            import urllib.parse
+            encoded = urllib.parse.quote(raw_prompt)
+            seed = random.randint(100000, 999999)
+            fallback_img_url = f"https://image.pollinations.ai/prompt/{encoded}?width=1024&height=1024&nologo=true&seed={seed}"
+            return (
+                f"### 🎨 MUmu AI Image Studio\n\n"
+                f"Here is your generated image based on your needs:\n\n"
+                f"![{raw_prompt}]({fallback_img_url})\n\n"
+                f"#### 📋 Step-by-Step Overview:\n"
+                f"1. **Concept**: Visualized the scene: *\"{raw_prompt}\"*.\n"
+                f"2. **Styling**: Rendered at 1024×1024 resolution with vibrant contrast and lighting.\n"
+                f"3. **Actions**: You can expand, download, or ask me for creative style variations."
+            )
+
+        # 2. RAG query response if context was retrieved
         if rag_context and any(kw in query_lower for kw in ["document", "file", "uploaded", "summary", "read", "according"]):
             return (
                 f"### 📄 Based on Your Ingested Documents\n\n"
@@ -127,7 +161,7 @@ class OfflineEngine:
                 f"*(Source citations are attached above)*"
             )
 
-        # 2. Jokes and humor
+        # 3. Jokes and humor
         if any(w in query_lower for w in ["joke", "funny", "humor", "make me laugh", "pun"]):
             joke = random.choice(JOKES)
             return (
@@ -136,19 +170,19 @@ class OfflineEngine:
                 f"Hope that brightened your day! Want to hear another one?"
             )
 
-        # 3. Quantum computing
+        # 4. Quantum computing
         if "quantum" in query_lower:
             return TOPICS["quantum"]
 
-        # 4. RAG / Vector search explanation
+        # 5. RAG / Vector search explanation
         if "rag" in query_lower or "retrieval augmented" in query_lower:
             return TOPICS["rag"]
 
-        # 5. PersonalGPT / Who are you
-        if any(w in query_lower for w in ["who are you", "what are you", "what can you do", "features", "personalgpt"]):
-            return TOPICS["personalgpt"]
+        # 6. MUmu AI / Who are you
+        if any(w in query_lower for w in ["who are you", "what are you", "what can you do", "features", "mumu", "personalgpt"]):
+            return TOPICS["mumu_ai"]
 
-        # 6. Python / Programming
+        # 7. Python / Programming
         if "python" in query_lower and any(w in query_lower for w in ["what is", "why", "code", "learn", "how"]):
             return (
                 "### 🐍 Python Programming\n\n"
@@ -168,25 +202,26 @@ class OfflineEngine:
                 "Would you like an example or code snippet for a specific task?"
             )
 
-        # 7. Greetings
+        # 8. Greetings
         if re.match(r"^(hi|hello|hey|greetings|good morning|good evening|good afternoon)\b", query_lower):
             return (
-                f"👋 **Hello!** I'm **PersonalGPT**, your private personal AI assistant.\n\n"
+                f"👋 **Hello!** I'm **MUmu AI**, your intelligent multimodal personal AI assistant.\n\n"
                 f"I am ready to help you with:\n"
-                f"- **Questions & Explanations** (science, engineering, coding, general knowledge)\n"
-                f"- **Tool Calling** (accurate math evaluations, current date & time)\n"
-                f"- **Knowledge Search & RAG** (upload documents to ask questions about your files)\n"
-                f"- **Long-term Memory** (I remember facts and preferences you share with me)\n\n"
+                f"- **Camera Scan & Search** (instant visual search and neat step-by-step explanations)\n"
+                f"- **AI Image Generation** (tell me what image to generate based on your needs)\n"
+                f"- **Questions & Explanations** (math, science, coding, analysis)\n"
+                f"- **Agent Tools** (live clock, accurate calculations, knowledge search)\n"
+                f"- **Long-term Memory** (I remember your preferences and key details)\n\n"
                 f"What would you like to explore today?"
             )
 
-        # 8. General conversational answer
+        # 9. General conversational answer
         return (
             f"I processed your query: **\"{query}\"**.\n\n"
-            f"Here is a thoughtful overview:\n\n"
-            f"- **Core Concept**: When examining \"{query}\", the key is identifying the underlying goals, constraints, and relevant context.\n"
-            f"- **Next Steps**: You can ask me to dive deeper into any specific aspect, write code, run calculations, or analyze documents from your personal knowledge base.\n\n"
-            f"Feel free to ask a follow-up or provide more details!"
+            f"Here is a thoughtful, step-by-step overview:\n\n"
+            f"- **1. Core Concept**: In evaluating \"{query}\", the priority is identifying the exact requirements and desired outcomes.\n"
+            f"- **2. Recommendations**: You can ask me to dive deeper into any specific aspect, generate artwork, scan an image with your camera, write code, or analyze documents.\n\n"
+            f"Feel free to ask a follow-up or specify your exact goal!"
         )
 
     @classmethod
@@ -195,7 +230,7 @@ class OfflineEngine:
         # Add subtle footer note about local engine
         footer = (
             "\n\n---\n"
-            "> 💡 *Operating on PersonalGPT Built-in Offline Engine. "
+            "> 💡 *Operating on MUmu AI Built-in Engine. "
             "To connect neural models like Llama 3.2, launch Ollama (`ollama serve`) or add an API key in Settings.*"
         )
         full_text = text + footer
@@ -203,3 +238,4 @@ class OfflineEngine:
         for i, word in enumerate(words):
             await asyncio.sleep(0.015)
             yield word + (" " if i < len(words) - 1 else "")
+

@@ -29,4 +29,34 @@ class ToolPlanner:
             keyword = search_match.group(1).strip()
             return {"tool": "file_search", "arguments": {"keyword": keyword}}
 
+        # 4. Image Generation intent: "generate an image of...", "create a picture of...", "draw a..."
+        img_match = re.search(
+            r'(?:generate|create|make|draw|paint|render|produce|design)\s+(?:an?\s+|the\s+)?(?:image|picture|photo|illustration|drawing|artwork|graphic|render|portrait|wallpaper|avatar)(?:\s+(?:of|showing|depicting|with|for))?\s*(.+)',
+            prompt,
+            re.IGNORECASE
+        )
+        if img_match:
+            img_prompt = img_match.group(1).strip()
+            img_prompt = re.sub(r'[\.\?\!]+$', '', img_prompt).strip()
+            if img_prompt:
+                return {"tool": "image_generation", "arguments": {"prompt": img_prompt}}
+
+        # "draw a ...", "paint a ..." (excluding diagrams/charts/conclusions)
+        draw_match = re.search(r'^(?:please\s+)?(?:draw|paint|illustrate)\s+(?:me\s+)?(?:an?\s+|the\s+)?([a-zA-Z0-9\s,\-\'\"]+)', prompt, re.IGNORECASE)
+        if draw_match:
+            candidate = draw_match.group(1).strip()
+            candidate = re.sub(r'[\.\?\!]+$', '', candidate).strip()
+            if not any(excluded in candidate.lower() for excluded in ["conclusion", "flowchart", "diagram", "table", "graph", "chart"]):
+                if candidate:
+                    return {"tool": "image_generation", "arguments": {"prompt": candidate}}
+
+        # "image of ...", "generate image: ..."
+        direct_match = re.search(r'^(?:generate\s+)?image(?:\s+of|:)\s+(.+)', prompt, re.IGNORECASE)
+        if direct_match:
+            candidate = direct_match.group(1).strip()
+            candidate = re.sub(r'[\.\?\!]+$', '', candidate).strip()
+            if candidate:
+                return {"tool": "image_generation", "arguments": {"prompt": candidate}}
+
         return None
+

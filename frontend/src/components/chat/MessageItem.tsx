@@ -18,7 +18,76 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Basic formatting helper for markdown code blocks and inline tags
+  const formatSpans = (text: string) => {
+    const tokens = text.split(/(\*\*.*?\*\*|`.*?`|\*.*?\*)/g);
+    return tokens.map((token, tIdx) => {
+      if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
+        return <strong key={tIdx} className="font-semibold text-foreground">{token.slice(2, -2)}</strong>;
+      }
+      if (token.startsWith('`') && token.endsWith('`') && token.length >= 2) {
+        return <code key={tIdx} className="px-1.5 py-0.5 rounded bg-secondary/80 text-[11px] font-mono border border-border/40 text-primary">{token.slice(1, -1)}</code>;
+      }
+      if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
+        return <em key={tIdx} className="italic text-muted-foreground">{token.slice(1, -1)}</em>;
+      }
+      return token;
+    });
+  };
+
+  const formatInlineText = (text: string) => {
+    // Convert LaTeX math delimiters ($...$ and $$...$$) and symbols (\times, \div, etc.) into clean unicode
+    const clean = text
+      .replace(/\$\$([^$]+?)\$\$/g, '$1')
+      .replace(/\$([^$]+?)\$/g, '$1')
+      .replace(/\\times/g, '×')
+      .replace(/\\div/g, '÷')
+      .replace(/\\cdot/g, '·')
+      .replace(/\\pm/g, '±')
+      .replace(/\\approx/g, '≈')
+      .replace(/\\neq/g, '≠')
+      .replace(/\\leq/g, '≤')
+      .replace(/\\geq/g, '≥');
+
+    const lines = clean.split('\n');
+    return lines.map((line, lIdx) => {
+      if (line.startsWith('### ')) {
+        return (
+          <h4 key={lIdx} className="font-bold text-sm text-foreground mt-3 mb-1.5">
+            {formatSpans(line.slice(4))}
+          </h4>
+        );
+      }
+      if (line.startsWith('## ')) {
+        return (
+          <h3 key={lIdx} className="font-bold text-base text-foreground mt-3 mb-1.5">
+            {formatSpans(line.slice(3))}
+          </h3>
+        );
+      }
+      if (line.startsWith('# ')) {
+        return (
+          <h2 key={lIdx} className="font-bold text-lg text-foreground mt-3 mb-2">
+            {formatSpans(line.slice(2))}
+          </h2>
+        );
+      }
+      if (line.includes('Executed tool')) {
+        return (
+          <div key={lIdx} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-md my-1 border border-border/40 font-mono">
+            {formatSpans(line)}
+          </div>
+        );
+      }
+
+      return (
+        <p key={lIdx} className={line.trim() === '' ? 'h-2' : 'leading-relaxed my-0.5'}>
+          {formatSpans(line)}
+        </p>
+      );
+    });
+  };
+
+  // Formatting helper for markdown code blocks, inline tags, and clean math
   const renderFormattedContent = (content: string) => {
     if (!content && isStreaming) {
       return (
@@ -59,14 +128,15 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
         );
       }
 
-      // Render regular text with paragraphs and line breaks
+      // Render regular text with clean math and markdown formatting
       return (
-        <span key={idx} className="whitespace-pre-wrap leading-relaxed">
-          {part}
-        </span>
+        <div key={idx} className="space-y-0.5">
+          {formatInlineText(part)}
+        </div>
       );
     });
   };
+
 
   return (
     <div className={`py-4 px-4 sm:px-6 flex gap-3.5 sm:gap-4 ${isUser ? 'bg-secondary/20' : 'bg-background'}`}>

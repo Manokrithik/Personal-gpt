@@ -57,15 +57,16 @@
 PersonalGPT is designed from the ground up as a private personal AI workstation. Unlike consumer chatbots that store conversations on third-party servers, PersonalGPT stores all conversation histories, user memory profiles, and ingested knowledge documents locally on your machine.
 
 ### Key Capabilities
-- **Private Conversational AI**: Stream tokens with low latency via Server-Sent Events (SSE).
-- **Provider Independence**: Switch between local Ollama models (`llama3.2`, `mistral`, `phi3`, `qwen2.5`) and cloud APIs (`gpt-4o-mini`, `gemini-1.5-flash`, `claude-3-5-sonnet`) without modifying application code.
-- **Persistent Conversations**: Complete CRUD for conversation threads with search, pinning, title editing, and full message history.
+- **📷 Camera Scan & Visual Search**: Instant camera capture (desktop webcam or mobile rear/front camera) to scan and solve math problems, inspect documents, decipher handwritten notes, or analyze real-world objects using multimodal vision.
+- **✨ Step-by-Step Understandable Explanations**: Clean, structured, step-by-step walkthroughs for every question (whether typed or scanned) with readable unicode math (no messy LaTeX dollar signs).
+- **🌌 2026 Obsidian Glassmorphism UI**: High-contrast dark mode with aurora ambient gradients, interactive capability launchpads, quick-inspiration prompt chips, and smooth micro-animations.
+- **🔒 Private Conversational AI**: Stream tokens with low latency via Server-Sent Events (SSE).
+- **Provider Independence**: Switch between local Ollama models (`llama3.2`, `mistral`, `phi3`, `qwen2.5`) and cloud APIs (`gemini-3.6-flash`, `gpt-4o-mini`, `claude-3-5-sonnet`) without modifying application code.
 - **Dual-Tier Memory**:
   - *Short-Term Memory*: Sliding context window with token threshold management to prevent model context overflow.
   - *Long-Term Memory*: Automatic extraction and persistent storage of user preferences, goals, facts, and instructions across sessions.
 - **Personal Knowledge Base & RAG**: Upload PDF, TXT, DOCX, Markdown, and CSV files. Chunks are embedded and indexed in vector storage with clickable source citations.
 - **Controlled Tool Execution & Agents**: Built-in AST-safe Calculator, Date/Time, and semantic search tools coordinated through an intent-driven agent planner.
-- **Modern UI/UX**: Dark and light mode interface built with React 18, TypeScript, Tailwind CSS, and Lucide icons.
 
 ---
 

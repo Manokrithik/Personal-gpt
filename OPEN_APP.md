@@ -13,7 +13,11 @@
 ### Option 1: 🌐 Open Live Web App (Any Device - Phone / Tablet / PC)
 👉 **[CLICK TO OPEN PERSONALGPT: https://personal-gpt-v47o.onrender.com](https://personal-gpt-v47o.onrender.com)**
 
-*No installation required! Works directly in your browser on iOS, Android, macOS, and Windows with Google Gemini AI.*
+*✨ Features active on live app:*
+- 📷 **Live Camera Scan & Search**: Point camera at math, science questions, or documents to scan & solve.
+- ⚡ **Step-by-Step Clarity**: Every answer broken down into neat, numbered steps.
+- 🌌 **2026 Obsidian Glass UI**: High-contrast dark mode with aurora ambient glow and launchpad cards.
+- 🔒 **Private & Secure**: Runs directly in your browser on iOS, Android, macOS, and Windows.
 
 ---
 

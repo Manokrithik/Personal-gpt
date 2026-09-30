@@ -4,112 +4,158 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 4%;
+    --background: 0 0% 96%;
+    --foreground: 0 0% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
+    --card-foreground: 0 0% 12%;
 
-    --primary: 250 84% 58%;
+    /* Figma signature blue */
+    --primary: 205 100% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 12%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 46%;
 
-    --accent: 250 84% 96%;
-    --accent-foreground: 250 84% 45%;
+    --accent: 205 100% 96%;
+    --accent-foreground: 205 100% 45%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 250 84% 58%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 205 100% 53%;
 
-    --radius: 0.875rem;
+    --radius: 0.5rem;
+
+    /* Dynamic Studio Theme Custom Variables */
+    --theme-app-accent: #0d99ff;
+    --theme-app-bg: #1e1e1e;
+    --theme-chat-bg: #1e1e1e;
+    --theme-user-bubble-bg: #2a2a2a;
+    --theme-user-text: #ffffff;
+    --theme-ai-bubble-bg: #242424;
+    --theme-ai-text: #f0f0f0;
+    --theme-border: #383838;
   }
 
   .dark {
-    /* Modern Obsidian & Velvet Zinc */
-    --background: 240 12% 4%;
-    --foreground: 0 0% 98%;
+    /* Authentic Figma Dark Palette */
+    --background: 0 0% 12%;       /* #1e1e1e Figma Canvas */
+    --foreground: 0 0% 96%;       /* #f5f5f5 */
 
-    --card: 240 10% 6.5%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 17%;             /* #2c2c2c Figma Panel */
+    --card-foreground: 0 0% 96%;
 
-    /* Electric Violet-Indigo Accent */
-    --primary: 252 87% 65%;
+    /* Figma Electric Blue #0d99ff */
+    --primary: 205 100% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 6% 12%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 0 0% 22%;        /* #383838 */
+    --secondary-foreground: 0 0% 92%;
 
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 64%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 68%;
 
-    --accent: 245 40% 15%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 205 100% 16%;
+    --accent-foreground: 205 100% 70%;
 
-    --border: 240 6% 14%;
-    --input: 240 6% 14%;
-    --ring: 252 87% 65%;
+    --border: 0 0% 22%;           /* #383838 */
+    --input: 0 0% 22%;
+    --ring: 205 100% 53%;
   }
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 code, pre {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Custom modern scrollbars */
+/* Figma Canvas Dot Grid */
+.figma-canvas-grid {
+  background-color: var(--theme-chat-bg, #1e1e1e);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.figma-canvas-grid-square {
+  background-color: var(--theme-chat-bg, #1e1e1e);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.figma-canvas-grid-light {
+  background-color: #f0f0f0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Figma Frame Container & Selection */
+.figma-frame-card {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.figma-selected {
+  outline: 2px solid #0d99ff !important;
+  outline-offset: -1px;
+}
+
+/* Figma UI3 Floating Pill / Dock */
+.figma-floating-dock {
+  background: rgba(44, 44, 44, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.1) inset;
+}
+
+.figma-floating-dock-light {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.12), 0 1px 0 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+/* Figma Precise Tooltips and Inputs */
+.figma-input {
+  background-color: #1e1e1e;
+  border: 1px solid #383838;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 4px 6px;
+  transition: all 0.15s ease;
+}
+
+.figma-input:focus {
+  outline: none;
+  border-color: #0d99ff;
+  box-shadow: 0 0 0 1px #0d99ff;
+}
+
+/* Figma Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(150, 150, 150, 0.2);
-  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(150, 150, 150, 0.35);
-}
-
-/* Modern 2026 AI Glassmorphism & Aurora Gradients */
-.bg-aurora {
-  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent);
-}
-
-.glass-panel {
-  background: rgba(18, 19, 26, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.008) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-}
-
-.glass-card:hover {
-  border-color: rgba(129, 140, 248, 0.4);
-  box-shadow: 0 8px 30px -4px rgba(99, 102, 241, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #C7D2FE 45%, #67E8F9 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: rgba(255, 255, 255, 0.3);
 }

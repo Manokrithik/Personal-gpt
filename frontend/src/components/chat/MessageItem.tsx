@@ -67,8 +67,8 @@ const GeneratedImageCard: React.FC<{ alt: string; url: string }> = ({ alt, url }
           <span>MUmu AI Image Studio</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold">
-            1024 × 1024 HD
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#0d99ff]/15 text-[#0d99ff] border border-[#0d99ff]/30 font-semibold">
+            HD Canvas (Flux AI)
           </span>
         </div>
       </div>
@@ -76,19 +76,21 @@ const GeneratedImageCard: React.FC<{ alt: string; url: string }> = ({ alt, url }
       {/* Image Container with Shimmer Skeleton */}
       <div className="relative overflow-hidden bg-black/50 min-h-[220px] flex items-center justify-center">
         {!loaded && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-secondary/30 animate-pulse">
-            <Sparkles className="w-6 h-6 text-primary animate-spin" />
-            <span className="text-xs font-mono">Generating high-res artwork...</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#888888] bg-[#222222] animate-pulse">
+            <Sparkles className="w-6 h-6 text-[#0d99ff] animate-spin" />
+            <span className="text-xs font-mono text-[#cccccc]">Rendering high-res artwork...</span>
           </div>
         )}
         <img
           src={url}
           alt={alt}
+          loading="eager"
+          decoding="async"
           onLoad={() => setLoaded(true)}
           onClick={() => setModalOpen(true)}
-          className={`w-full max-h-[460px] object-cover transition-all duration-500 cursor-pointer ${
+          className={`w-full max-h-[460px] object-cover transition-all duration-300 cursor-pointer ${
             loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          } hover:scale-[1.02]`}
+          } hover:scale-[1.01]`}
         />
 
         {/* Hover Quick Action Overlay */}
@@ -173,8 +175,42 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
   };
 
   const formatSpans = (text: string) => {
-    const tokens = text.split(/(\*\*.*?\*\*|`.*?`|\*.*?\*)/g);
+    const tokens = text.split(/(\[[^\]]+\]\(https?:\/\/[^\s\)]+\)|https?:\/\/[^\s\)]+|\*\*.*?\*\*|`.*?`|\*.*?\*)/g);
     return tokens.map((token, tIdx) => {
+      // 1. Markdown link: [Title](url)
+      const linkMatch = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)$/);
+      if (linkMatch) {
+        const [, label, href] = linkMatch;
+        return (
+          <a
+            key={tIdx}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-semibold text-[#0d99ff] hover:text-[#38bdf8] hover:underline underline-offset-2 break-all transition-colors cursor-pointer group"
+          >
+            <span>{label}</span>
+            <ExternalLink className="w-3 h-3 inline-block shrink-0 opacity-75 group-hover:opacity-100 transition-opacity" />
+          </a>
+        );
+      }
+
+      // 2. Raw URL: https://...
+      if (token.match(/^https?:\/\/[^\s\)]+$/)) {
+        return (
+          <a
+            key={tIdx}
+            href={token}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-semibold text-[#0d99ff] hover:text-[#38bdf8] hover:underline underline-offset-2 break-all transition-colors cursor-pointer group"
+          >
+            <span>{token.length > 45 ? token.slice(0, 42) + '...' : token}</span>
+            <ExternalLink className="w-3 h-3 inline-block shrink-0 opacity-75 group-hover:opacity-100 transition-opacity" />
+          </a>
+        );
+      }
+
       if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
         return <strong key={tIdx} className="font-semibold text-foreground">{token.slice(2, -2)}</strong>;
       }
@@ -212,6 +248,23 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
       const inlineImg = line.match(/!\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/);
       if (inlineImg && line.trim().startsWith('![')) {
         return <GeneratedImageCard key={lIdx} alt={inlineImg[1]} url={inlineImg[2]} />;
+      }
+
+      if (line.startsWith('### ') && (line.toLowerCase().includes('direct answer') || line.toLowerCase().includes('quick summary') || line.toLowerCase().includes('answer:'))) {
+        const textAfter = line.replace(/^###\s*[^\w]*\s*(direct\s*answer[:\s]*|quick\s*summary[:\s]*)/i, '').trim();
+        return (
+          <div key={lIdx} className="my-2 p-2.5 rounded-lg bg-[#0d99ff]/15 border border-[#0d99ff]/40 text-white shadow-xs">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#0d99ff] uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0d99ff] animate-pulse" />
+              <span>Direct Answer</span>
+            </div>
+            {textAfter && (
+              <div className="mt-1 text-xs sm:text-sm font-semibold text-white leading-relaxed">
+                {formatSpans(textAfter)}
+              </div>
+            )}
+          </div>
+        );
       }
 
       if (line.startsWith('### ')) {
@@ -302,15 +355,34 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
   };
 
   return (
-    <div className={`py-4 px-4 sm:px-6 flex gap-3.5 sm:gap-4 ${isUser ? 'bg-secondary/20' : 'bg-background'}`}>
+    <div
+      className="py-4 px-4 sm:px-6 flex gap-3.5 sm:gap-4 rounded-xl border transition-all my-1.5 shadow-sm"
+      style={{
+        backgroundColor: isUser
+          ? 'var(--theme-user-bubble-bg, rgba(255,255,255,0.05))'
+          : 'var(--theme-ai-bubble-bg, rgba(255,255,255,0.02))',
+        color: isUser
+          ? 'var(--theme-user-text, #ffffff)'
+          : 'var(--theme-ai-text, #f0f0f0)',
+        borderColor: isUser
+          ? 'color-mix(in srgb, var(--theme-app-accent, #0d99ff) 35%, transparent)'
+          : 'var(--theme-border, #383838)',
+      }}
+    >
       <div className="shrink-0 mt-0.5">
         {isUser ? (
-          <div className="w-7 h-7 rounded-full bg-accent border border-border flex items-center justify-center text-foreground font-semibold text-xs shadow-sm">
-            <User className="w-4 h-4 text-muted-foreground" />
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white font-semibold text-xs shadow-sm"
+            style={{ backgroundColor: 'var(--theme-app-accent, #0d99ff)' }}
+          >
+            <User className="w-4 h-4 text-white" />
           </div>
         ) : (
-          <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shadow-sm">
-            <Bot className="w-4 h-4 text-primary" />
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm"
+            style={{ backgroundColor: 'var(--theme-app-accent, #0d99ff)' }}
+          >
+            <Bot className="w-4 h-4 text-white" />
           </div>
         )}
       </div>
@@ -318,8 +390,13 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
       <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-foreground">
-              {isUser ? 'You' : 'MUmu AI'}
+            <span
+              className="text-xs font-semibold"
+              style={{
+                color: isUser ? 'var(--theme-user-text, #ffffff)' : 'var(--theme-app-accent, #0d99ff)',
+              }}
+            >
+              {isUser ? 'You' : 'PersonalGPT'}
             </span>
             {message.model && !isUser && (
               <span className="text-[10px] font-mono text-muted-foreground/80 px-1.5 py-0.2 rounded bg-secondary border border-border/50">
@@ -369,7 +446,12 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
         )}
 
         {/* Content */}
-        <div className="text-sm text-foreground/90 font-normal">
+        <div
+          className="text-sm font-normal leading-relaxed"
+          style={{
+            color: isUser ? 'var(--theme-user-text, #ffffff)' : 'var(--theme-ai-text, #f0f0f0)',
+          }}
+        >
           {renderFormattedContent(message.content)}
         </div>
 
@@ -387,20 +469,31 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, isStreaming }
 
             {showSources && (
               <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {message.citations.map((c, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2.5 rounded-md bg-secondary/40 border border-border/50 text-xs space-y-1 hover:border-primary/40 transition-colors"
-                  >
-                    <div className="flex items-center justify-between font-medium text-foreground truncate">
-                      <span className="truncate">{c.filename}</span>
-                      {c.page && <span className="text-[10px] text-muted-foreground">p. {c.page}</span>}
+                {message.citations.map((c, idx) => {
+                  const isLink = !!c.url;
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        if (c.url) window.open(c.url, '_blank', 'noopener,noreferrer');
+                      }}
+                      className={`p-2.5 rounded-md bg-secondary/40 border border-border/50 text-xs space-y-1 transition-all ${
+                        isLink ? 'cursor-pointer hover:border-primary/60 hover:bg-secondary/70 group' : 'hover:border-primary/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-medium text-foreground truncate">
+                        <span className={`truncate flex items-center gap-1.5 ${isLink ? 'text-primary group-hover:underline' : ''}`}>
+                          {c.filename}
+                          {isLink && <ExternalLink className="w-3 h-3 inline shrink-0 opacity-75 group-hover:opacity-100" />}
+                        </span>
+                        {c.page && <span className="text-[10px] text-muted-foreground">p. {c.page}</span>}
+                      </div>
+                      <p className="text-muted-foreground text-[11px] line-clamp-3 leading-relaxed">
+                        "{c.content}"
+                      </p>
                     </div>
-                    <p className="text-muted-foreground text-[11px] line-clamp-3 leading-relaxed">
-                      "{c.content}"
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

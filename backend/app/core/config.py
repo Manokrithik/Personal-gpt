@@ -35,8 +35,8 @@ class Settings(BaseSettings):
 
     @property
     def effective_default_model(self) -> str:
-        if self.LLM_PROVIDER == "gemini" and (not self.DEFAULT_MODEL or self.DEFAULT_MODEL in ["llama3.2:1b", "gemini-1.5-flash"]):
-            return "gemini-3.6-flash"
+        if self.LLM_PROVIDER == "gemini" and (not self.DEFAULT_MODEL or self.DEFAULT_MODEL in ["llama3.2:1b", "gemini-1.5-flash", "gemini-3.6-flash"]):
+            return "gemini-3.8-flash"
         return self.DEFAULT_MODEL
 
     # Ollama Local
@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o-mini"
 
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-3.6-flash"
+    GEMINI_MODEL: str = "gemini-3.8-flash"
 
     ANTHROPIC_API_KEY: str = ""
     ANTHROPIC_MODEL: str = "claude-3-5-sonnet-20241022"
@@ -81,6 +81,11 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = "INFO"
+
+    # JWT Authentication
+    JWT_SECRET_KEY: str = "personalgpt-figma-canvas-secret-key-2026-secure"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
 @lru_cache
 def get_settings() -> Settings:

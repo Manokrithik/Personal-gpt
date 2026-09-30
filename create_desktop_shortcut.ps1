@@ -1,14 +1,16 @@
 $ErrorActionPreference = "Stop"
 $projectDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+if (-not $projectDir) { $projectDir = (Get-Location).Path }
 $desktopPath = [System.Environment]::GetFolderPath('Desktop')
 $shortcutPath = Join-Path $desktopPath "PersonalGPT.lnk"
 
 $wshShell = New-Object -ComObject WScript.Shell
 $shortcut = $wshShell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = Join-Path $projectDir "backend\.venv\Scripts\pythonw.exe"
-$shortcut.Arguments = "`"$projectDir\desktop_app.py`""
+$shortcut.TargetPath = "wscript.exe"
+$shortcut.Arguments = "`"$projectDir\PersonalGPT.vbs`""
 $shortcut.WorkingDirectory = $projectDir
-$shortcut.Description = "PersonalGPT - Private AI Workstation"
+$shortcut.IconLocation = "$projectDir\assets\icon.ico"
+$shortcut.Description = "PersonalGPT - Intelligent Personal AI Workstation"
 $shortcut.Save()
 
 Write-Host "Created Desktop Shortcut: $shortcutPath"

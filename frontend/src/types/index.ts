@@ -5,6 +5,7 @@ export interface Citation {
   content: string;
   page?: number;
   similarity_score?: number;
+  url?: string;
 }
 
 export interface Message {
@@ -88,4 +89,19 @@ export interface SystemHealth {
     upload_dir: string;
     upload_dir_ready: boolean;
   };
+}
+
+export interface User {
+  id: string;
+  username: string;
+  email?: string;
+  display_name?: string;
+  avatar_color?: string;
+  created_at?: string;
+}
+
+export interface AuthTokenResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
 }

@@ -1,267 +1,89 @@
 import React from 'react';
-import {
-  Camera,
-  Calculator,
-  BookOpen,
-  Code2,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  CheckCircle2,
-  Compass,
-  Palette
-} from 'lucide-react';
+import { Sparkles, Calendar, LogIn } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
+import { useThemeStore } from '../../store/themeStore';
 
 interface WelcomeHeroProps {
   onSelectPrompt: (promptText: string) => void;
   onOpenCamera: () => void;
 }
 
-export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onSelectPrompt, onOpenCamera }) => {
-  // Determine dynamic greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
+export const WelcomeHero: React.FC<WelcomeHeroProps> = () => {
+  const { user, isAuthenticated, openAuthModal } = useAuthStore();
+  const { currentTheme } = useThemeStore();
 
-  const samplePrompts = [
-    {
-      icon: '🎨',
-      title: 'AI Image Generation',
-      badge: 'Flux Studio',
-      prompt: 'Generate an image of a cybernetic tiger walking through a futuristic neon Tokyo street in the rain.',
-    },
-    {
-      icon: '📐',
-      title: 'Math Equation',
-      badge: 'Step-by-Step',
-      prompt: 'Solve the equation 2x² - 8x + 6 = 0 step-by-step with clean calculations.',
-    },
-    {
-      icon: '🧬',
-      title: 'Biology & Science',
-      badge: 'Clear Stages',
-      prompt: 'Explain how photosynthesis works step-by-step in simple, understandable terms.',
-    },
-    {
-      icon: '💻',
-      title: 'Code Architecture',
-      badge: 'Clean Code',
-      prompt: 'Write and explain a modern Python async worker with error handling step-by-step.',
-    },
-  ];
+  const now = new Date();
+  const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }); // e.g. "Monday"
+  const formattedDate = now.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }); // e.g. "Sep 28, 2026"
+
+  const displayName = isAuthenticated && user ? (user.display_name || user.username) : null;
 
   return (
-    <div className="relative min-h-full flex flex-col items-center justify-center px-4 py-10 max-w-4xl mx-auto w-full select-none animate-fade-in bg-aurora">
-      {/* Top Floating Glowing Beacon */}
-      <div className="relative mb-6 flex flex-col items-center">
-        <div className="relative w-16 h-16 flex items-center justify-center group">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 blur-xl opacity-50 group-hover:opacity-80 transition-opacity animate-pulse" />
-          <div className="relative w-16 h-16 rounded-2xl bg-card/90 border border-white/15 flex items-center justify-center shadow-2xl backdrop-blur-xl">
-            <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-          </div>
-        </div>
-
-        <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-secondary/80 border border-white/10 text-xs font-medium shadow-sm backdrop-blur-md">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-foreground font-semibold">MUmu AI Modern Studio</span>
-          <span className="text-muted-foreground/60">•</span>
-          <span className="text-primary font-mono text-[11px]">Multimodal & Image AI</span>
+    <div className="relative min-h-[55vh] flex flex-col items-center justify-center px-4 py-8 max-w-xl mx-auto w-full select-none animate-in fade-in duration-300">
+      {/* Sleek Ambient Glowing Logo Aura */}
+      <div className="relative mb-5 flex items-center justify-center">
+        <div
+          className="absolute -inset-3 rounded-full blur-2xl opacity-20 animate-pulse"
+          style={{ backgroundColor: currentTheme.appAccent }}
+        />
+        <div
+          className="relative w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl border transition-all"
+          style={{
+            backgroundColor: 'var(--theme-ai-bubble-bg, #202225)',
+            borderColor: 'var(--theme-border, #33373e)',
+          }}
+        >
+          <Sparkles
+            className="w-7 h-7 transition-colors drop-shadow-sm"
+            style={{ color: currentTheme.appAccent }}
+          />
         </div>
       </div>
 
-      {/* Main Title & Subtitle */}
-      <div className="text-center space-y-3 max-w-2xl mb-9">
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-[1.15]">
-          {getGreeting()},{' '}
-          <span className="text-gradient">
-            what shall we create today?
+      {/* Date & Day Pill */}
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1e1e1e] border border-[#333333] text-xs text-[#a0a0a0] mb-3 shadow-inner">
+        <Calendar className="w-3.5 h-3.5 text-[#0d99ff]" />
+        <span className="font-semibold text-white">{dayName}</span>
+        <span className="text-[#555555]">•</span>
+        <span>{formattedDate}</span>
+      </div>
+
+      {/* Headline: Hi [Username], Happy [Today's Day]! */}
+      <div className="text-center space-y-2.5">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+          Hi{' '}
+          <span
+            className="bg-clip-text text-transparent"
+            style={{
+              backgroundImage: `linear-gradient(135deg, #ffffff 30%, ${currentTheme.appAccent} 100%)`,
+            }}
+          >
+            {displayName || 'there'}
           </span>
+          , Happy {dayName}!
         </h1>
-
-        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto font-normal">
-          MUmu AI generates images on demand, scans real-world problems with camera, and delivers <strong className="text-foreground font-semibold">neat, step-by-step</strong> answers tailored to your needs.
+        <p className="text-xs sm:text-sm text-[#888888] font-normal leading-relaxed max-w-md mx-auto">
+          Converse naturally, write code, solve problems, and explore ideas with human-level clarity.
         </p>
-      </div>
 
-      {/* 4 Unique Glassmorphism Interactive Launchpad Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-8">
-        {/* Card 1: Camera Scan & Search */}
-        <div
-          onClick={onOpenCamera}
-          className="glass-card group relative p-5 rounded-2xl cursor-pointer hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all pointer-events-none" />
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shadow-sm group-hover:scale-110 transition-transform">
-              <Camera className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-foreground group-hover:text-cyan-400 transition-colors">
-                  Camera Scan & Search
-                </h3>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                  Multimodal
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                Scan handwritten math equations, documents, textbook pages, or physical items for real-time visual solutions.
-              </p>
-            </div>
-          </div>
-          <div className="pt-4 flex items-center text-xs font-bold text-cyan-400 group-hover:translate-x-1 transition-transform">
-            <span>Launch Camera Scanner</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-          </div>
-        </div>
-
-        {/* Card 2: Step-by-Step Solver */}
-        <div
-          onClick={() => onSelectPrompt('Solve this step-by-step with clean calculations: ')}
-          className="glass-card group relative p-5 rounded-2xl cursor-pointer hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all pointer-events-none" />
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-sm group-hover:scale-110 transition-transform">
-              <Calculator className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-foreground group-hover:text-emerald-400 transition-colors">
-                  Step-by-Step Solver
-                </h3>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  Structured
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                Break down math problems, scientific principles, and logic tasks into clean, numbered steps with zero confusing symbols.
-              </p>
-            </div>
-          </div>
-          <div className="pt-4 flex items-center text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">
-            <span>Solve a Problem</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-          </div>
-        </div>
-
-        {/* Card 3: AI Image Studio */}
-        <div
-          onClick={() => onSelectPrompt('Generate an image of a cybernetic tiger in a futuristic neon Tokyo street at night')}
-          className="glass-card group relative p-5 rounded-2xl cursor-pointer hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all pointer-events-none" />
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-sm group-hover:scale-110 transition-transform">
-              <Palette className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-foreground group-hover:text-purple-400 transition-colors">
-                  AI Image Studio
-                </h3>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  Image Gen
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                Generate high-resolution photorealistic and artistic images directly tailored to your creative visual prompts.
-              </p>
-            </div>
-          </div>
-          <div className="pt-4 flex items-center text-xs font-bold text-purple-400 group-hover:translate-x-1 transition-transform">
-            <span>Create AI Image</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-          </div>
-        </div>
-
-        {/* Card 4: Code & Technical Architecture */}
-        <div
-          onClick={() => onSelectPrompt('Write and explain step-by-step: ')}
-          className="glass-card group relative p-5 rounded-2xl cursor-pointer hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all pointer-events-none" />
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-sm group-hover:scale-110 transition-transform">
-              <Code2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-foreground group-hover:text-amber-400 transition-colors">
-                  Code & System Architect
-                </h3>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  Engineered
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                Design system architectures, write clean commented code, and debug errors with full step-by-step reasoning.
-              </p>
-            </div>
-          </div>
-          <div className="pt-4 flex items-center text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
-            <span>Architect & Code</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-          </div>
-        </div>
-      </div>
-
-      {/* Curated Quick-Action Starter Prompts */}
-      <div className="w-full space-y-3 mb-8">
-        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-          <span className="font-bold text-foreground flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-primary" />
-            Quick Inspiration
-          </span>
-          <span className="text-[11px] text-muted-foreground/70">Click to execute immediately</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {samplePrompts.map((item, idx) => (
+        {/* Quick Sign In prompt if guest */}
+        {!isAuthenticated && (
+          <div className="pt-2">
             <button
-              key={idx}
-              type="button"
-              onClick={() => onSelectPrompt(item.prompt)}
-              className="glass-card text-left p-3 rounded-xl hover:border-primary/40 transition-all flex items-start gap-3 group"
+              onClick={() => openAuthModal('login')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#0d99ff] hover:text-white bg-[#0d99ff]/10 hover:bg-[#0d99ff] border border-[#0d99ff]/30 transition-all cursor-pointer shadow-sm active:scale-95"
             >
-              <span className="text-lg select-none shrink-0 group-hover:scale-125 transition-transform">{item.icon}</span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                    {item.title}
-                  </span>
-                  <span className="text-[9px] font-mono text-muted-foreground/80 px-1.5 py-0.2 rounded bg-secondary/80 border border-white/5">
-                    {item.badge}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground truncate leading-relaxed mt-0.5">
-                  {item.prompt}
-                </p>
-              </div>
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign in to save your personal profile</span>
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Modern High-Tech Bottom Assurance Strip */}
-      <div className="flex flex-wrap items-center justify-center gap-5 text-[11px] text-muted-foreground/70 pt-4 border-t border-white/5 w-full font-mono">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50" />
-          <span className="text-foreground/80">Multimodal Vision</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-          <span className="text-foreground/80">100% Private Data</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-foreground/80">Neat Step-by-Step Logic</span>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+

@@ -14,7 +14,7 @@ interface ModelState {
 
 export const useModelStore = create<ModelState>((set) => ({
   models: [],
-  currentModel: 'gemini-1.5-flash',
+  currentModel: 'personalgpt-pro',
   currentProvider: 'gemini',
   isLoading: false,
 

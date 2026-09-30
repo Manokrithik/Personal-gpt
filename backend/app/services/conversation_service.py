@@ -12,25 +12,32 @@ class ConversationService:
         self.msg_repo = MessageRepository(session)
         self.settings = get_settings()
 
-    async def list_conversations(self) -> List[ConversationSchema]:
-        convs = await self.conv_repo.list_all()
+    async def list_conversations(self, user_id: Optional[str] = None) -> List[ConversationSchema]:
+        if not user_id:
+            convs = await self.conv_repo.list_all()
+        else:
+            convs = await self.conv_repo.list_by_user(user_id=user_id)
         return [ConversationSchema.model_validate(c) for c in convs]
 
-    async def get_conversation(self, conversation_id: str) -> ConversationSchema:
+    async def get_conversation(self, conversation_id: str, user_id: Optional[str] = None) -> ConversationSchema:
         conv = await self.conv_repo.get_by_id(conversation_id, load_messages=True)
         if not conv:
             raise NotFoundException("Conversation", conversation_id)
+        if conv.user_id and user_id and conv.user_id != user_id:
+            raise NotFoundException("Conversation", conversation_id)
         return ConversationSchema.model_validate(conv)
 
-    async def create_conversation(self, data: ConversationCreate) -> ConversationSchema:
+    async def create_conversation(self, data: ConversationCreate, user_id: Optional[str] = None) -> ConversationSchema:
         model = data.model or self.settings.DEFAULT_MODEL
         title = data.title or "New Conversation"
-        conv = await self.conv_repo.create(title=title, model=model)
+        conv = await self.conv_repo.create(title=title, model=model, user_id=user_id)
         return ConversationSchema.model_validate(conv)
 
-    async def update_conversation(self, conversation_id: str, data: ConversationUpdate) -> ConversationSchema:
+    async def update_conversation(self, conversation_id: str, data: ConversationUpdate, user_id: Optional[str] = None) -> ConversationSchema:
         conv = await self.conv_repo.get_by_id(conversation_id, load_messages=False)
         if not conv:
+            raise NotFoundException("Conversation", conversation_id)
+        if conv.user_id and user_id and conv.user_id != user_id:
             raise NotFoundException("Conversation", conversation_id)
         
         if data.title is not None:
@@ -40,15 +47,19 @@ class ConversationService:
             
         return ConversationSchema.model_validate(conv)
 
-    async def delete_conversation(self, conversation_id: str) -> bool:
+    async def delete_conversation(self, conversation_id: str, user_id: Optional[str] = None) -> bool:
         conv = await self.conv_repo.get_by_id(conversation_id, load_messages=False)
         if not conv:
             raise NotFoundException("Conversation", conversation_id)
+        if conv.user_id and user_id and conv.user_id != user_id:
+            raise NotFoundException("Conversation", conversation_id)
         return await self.conv_repo.delete(conversation_id)
 
-    async def get_messages(self, conversation_id: str) -> List[MessageSchema]:
+    async def get_messages(self, conversation_id: str, user_id: Optional[str] = None) -> List[MessageSchema]:
         conv = await self.conv_repo.get_by_id(conversation_id, load_messages=False)
         if not conv:
+            raise NotFoundException("Conversation", conversation_id)
+        if conv.user_id and user_id and conv.user_id != user_id:
             raise NotFoundException("Conversation", conversation_id)
         msgs = await self.msg_repo.get_by_conversation(conversation_id)
         return [MessageSchema.model_validate(m) for m in msgs]

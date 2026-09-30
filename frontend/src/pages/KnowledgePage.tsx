@@ -56,22 +56,28 @@ export const KnowledgePage: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-y-auto bg-background p-6 sm:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-5">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto bg-[#1e1e1e] figma-canvas-grid p-4 sm:p-6 space-y-5 text-xs text-[#cccccc]">
+      {/* Figma Frame Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#383838] pb-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">Personal Knowledge Base</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Upload files to build your personal RAG vector library. All documents are chunked and indexed locally.
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-mono text-[10px] text-[#0d99ff] bg-[#0d99ff]/10 border border-[#0d99ff]/30 px-2 py-0.5 rounded font-semibold">
+              # Frame: RAG Component Library
+            </span>
+            <span className="text-[#666666] font-mono text-[10px]">1440 × 900</span>
+          </div>
+          <h2 className="text-lg font-bold tracking-tight text-white">Personal Knowledge Base</h2>
+          <p className="text-[11px] text-[#888888] mt-0.5">
+            Vector document embeddings and indexed chunks for contextual grounding during inference.
           </p>
         </div>
 
         <button
           onClick={() => fetchDocuments()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/80 bg-secondary/40 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#2c2c2c] border border-[#383838] hover:border-[#0d99ff] text-white font-medium text-xs transition-colors self-start sm:self-auto cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
+          <span>Refresh Library</span>
         </button>
       </div>
 

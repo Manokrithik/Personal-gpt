@@ -20,6 +20,11 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
     headers.set('Content-Type', 'application/json');
   }
 
+  const token = localStorage.getItem('personalgpt_token');
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
   const res = await fetch(url, {
     ...options,
     headers,
@@ -32,7 +37,26 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
     } catch {
       errData = { message: res.statusText };
     }
-    throw new ApiError(errData.message || 'API request failed', res.status, errData);
+
+    let parsedMessage = 'API request failed';
+    if (typeof errData.detail === 'string') {
+      parsedMessage = errData.detail;
+    } else if (Array.isArray(errData.detail)) {
+      parsedMessage = errData.detail
+        .map((e: any) => {
+          if (typeof e === 'string') return e;
+          const field = Array.isArray(e.loc) && e.loc.length > 0 ? e.loc[e.loc.length - 1] : '';
+          const msg = e.msg ? e.msg.replace(/^Value error,\s*/i, '') : 'Invalid value';
+          return field ? `${field}: ${msg}` : msg;
+        })
+        .join('. ');
+    } else if (errData.detail && typeof errData.detail === 'object') {
+      parsedMessage = errData.detail.msg || errData.detail.message || JSON.stringify(errData.detail);
+    } else if (typeof errData.message === 'string') {
+      parsedMessage = errData.message;
+    }
+
+    throw new ApiError(parsedMessage, res.status, errData);
   }
 
   if (res.status === 204) {

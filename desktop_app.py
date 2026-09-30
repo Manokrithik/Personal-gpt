@@ -23,59 +23,48 @@ def start_backend():
     os.chdir(str(backend_dir))
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, log_level="warning")
 
-def launch_native_webview():
-    try:
-        import webview
-        window = webview.create_window(
-            title="PersonalGPT — Private AI Workstation",
-            url="http://127.0.0.1:8000",
-            width=1280,
-            height=820,
-            min_size=(960, 640),
-            text_select=True,
-            confirm_close=False,
-        )
-        webview.start(gui="edgechromium", debug=False)
-        return True
-    except Exception as e:
-        print(f"pywebview fallback: {e}")
-        return False
-
-def launch_standalone_app():
-    edge_paths = [
+def get_browser_executable():
+    candidates = [
         os.path.expandvars(r"%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"),
         os.path.expandvars(r"%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"),
         os.path.expandvars(r"%LocalAppData%\Microsoft\Edge\Application\msedge.exe"),
-        "msedge.exe",
+        os.path.expandvars(r"%ProgramFiles%\Google\Chrome\Application\chrome.exe"),
+        os.path.expandvars(r"%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"),
+        os.path.expandvars(r"%LocalAppData%\Google\Chrome\Application\chrome.exe"),
+        os.path.expandvars(r"%ProgramFiles%\BraveSoftware\Brave-Browser\Application\brave.exe"),
     ]
-    edge_exe = next((p for p in edge_paths if os.path.exists(p)), "msedge.exe")
+    for p in candidates:
+        if os.path.isfile(p):
+            return p
+    return "msedge.exe"
+
+def launch_standalone_app():
+    browser_exe = get_browser_executable()
     profile_dir = root_dir / "data" / "app_profile"
     profile_dir.mkdir(parents=True, exist_ok=True)
 
     args = [
-        edge_exe,
+        browser_exe,
         "--app=http://127.0.0.1:8000",
-        "--window-size=1280,820",
-        f"--app-id=PersonalGPT",
+        "--window-size=1360,860",
+        "--app-id=PersonalGPT",
         f"--user-data-dir={profile_dir}",
     ]
     proc = subprocess.Popen(args)
     proc.wait()
 
 def main():
-    # 1. Start backend server in a background daemon thread if not already running
+    # 1. Ensure backend server is running
     if not is_backend_running():
         t = threading.Thread(target=start_backend, daemon=True)
         t.start()
-        for _ in range(30):
+        for _ in range(40):
             if is_backend_running():
                 break
-            time.sleep(0.4)
+            time.sleep(0.3)
 
-    # 2. Launch native application window
-    # Try native WebView2 window first, then standalone app mode
-    if not launch_native_webview():
-        launch_standalone_app()
+    # 2. Launch dedicated standalone desktop application window
+    launch_standalone_app()
 
 if __name__ == "__main__":
     main()

@@ -51,7 +51,18 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 async def init_db():
-    """Create tables if they do not exist."""
+    """Create tables if they do not exist and ensure schema is up to date."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Safe migration for user auth columns in SQLite
+        from sqlalchemy import text
+        for col_def in [
+            "ALTER TABLE users ADD COLUMN hashed_password VARCHAR(255)",
+            "ALTER TABLE users ADD COLUMN display_name VARCHAR(100)",
+            "ALTER TABLE users ADD COLUMN avatar_color VARCHAR(20)",
+        ]:
+            try:
+                await conn.execute(text(col_def))
+            except Exception:
+                pass
     logger.info("Database schema verified and initialized.")

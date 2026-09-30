@@ -12,18 +12,25 @@ class ModelService:
         self.config = get_settings()
 
     async def list_models(self) -> ModelListResponse:
-        default_model = "gemini-1.5-flash" if self.config.LLM_PROVIDER == "gemini" else self.config.DEFAULT_MODEL
+        default_model = "personalgpt-pro"
         current_model = await self.settings_repo.get("selected_model", default_model)
         current_provider = await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
 
-        # Auto-align model if provider is gemini
-        if current_provider == "gemini" and not current_model.lower().startswith("gemini"):
-            current_model = "gemini-1.5-flash"
+        # Permanent guard: If OpenAI has no API key configured, prevent it from being active default
+        openai_key = await self.settings_repo.get("openai_api_key") or self.config.OPENAI_API_KEY
+        if current_provider == "openai" and not openai_key:
+            current_model = "personalgpt-pro"
+            current_provider = "gemini"
+            await self.settings_repo.set("selected_model", current_model)
+            await self.settings_repo.set("selected_provider", current_provider)
 
         all_models = await self.registry.list_all_models()
+        # Sort so configured/gemini models appear at the top
+        all_models.sort(key=lambda m: 0 if m.provider == "gemini" else (1 if m.is_local else 2))
+
         # Mark selected
         for m in all_models:
-            m.is_selected = (m.id == current_model)
+            m.is_selected = (m.id == current_model and m.provider == current_provider)
 
         return ModelListResponse(
             models=all_models,

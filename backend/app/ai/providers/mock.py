@@ -15,12 +15,12 @@ class MockProvider(BaseLLMProvider):
     async def list_models(self) -> List[ModelInfo]:
         return [
             ModelInfo(
-                id="mock-gpt",
-                name="Mock GPT (Offline Test)",
+                id="personalgpt-pro",
+                name="PersonalGPT Pro (Human Intelligence)",
                 provider="mock",
                 is_local=True,
-                context_length=8192,
-                description="Fast in-memory mock model for testing and offline development",
+                context_length=32768,
+                description="PersonalGPT: Conversational, warm, empathetic, and human-like problem solving",
             )
         ]
 

@@ -19,6 +19,19 @@ class ConversationRepository:
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
+    async def list_by_user(self, user_id: Optional[str], limit: int = 50, offset: int = 0) -> List[Conversation]:
+        if not user_id:
+            return []
+        query = (
+            select(Conversation)
+            .where(Conversation.user_id == user_id)
+            .order_by(Conversation.is_pinned.desc(), Conversation.updated_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
     async def get_by_id(self, conversation_id: str, load_messages: bool = True) -> Optional[Conversation]:
         query = select(Conversation).where(Conversation.id == conversation_id)
         if load_messages:

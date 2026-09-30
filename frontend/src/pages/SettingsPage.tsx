@@ -73,11 +73,17 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-y-auto bg-background p-6 sm:p-8 space-y-8 max-w-4xl">
-      {/* Header */}
-      <div className="border-b border-border/50 pb-5">
-        <h2 className="text-xl font-bold tracking-tight text-foreground">Settings & Personalization</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto bg-[#1e1e1e] figma-canvas-grid p-4 sm:p-6 space-y-6 text-xs text-[#cccccc]">
+      {/* Figma Frame Header */}
+      <div className="border-b border-[#383838] pb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-mono text-[10px] text-[#0d99ff] bg-[#0d99ff]/10 border border-[#0d99ff]/30 px-2 py-0.5 rounded font-semibold">
+            # Frame: Studio Configuration & Memory
+          </span>
+          <span className="text-[#666666] font-mono text-[10px]">1440 × 900</span>
+        </div>
+        <h2 className="text-lg font-bold tracking-tight text-white">Settings & Personalization</h2>
+        <p className="text-[11px] text-[#888888] mt-0.5">
           Configure model parameters, long-term memory, privacy, and feature flags.
         </p>
       </div>

@@ -32,21 +32,26 @@ class ChatService:
         self.retriever = KnowledgeRetriever()
         self.agent_manager = AgentManager()
 
-    async def _resolve_conversation(self, req: ChatRequest) -> tuple[str, str]:
+    async def _resolve_conversation(self, req: ChatRequest, user_id: Optional[str] = None) -> tuple[str, str]:
         if req.conversation_id:
             conv = await self.conv_repo.get_by_id(req.conversation_id, load_messages=False)
             if conv:
-                conv_model = req.model or conv.model
-                if self.config.LLM_PROVIDER == "gemini" and not conv_model.lower().startswith("gemini"):
-                    conv_model = "gemini-1.5-flash"
+                if user_id and conv.user_id and conv.user_id != user_id:
+                    conv = None
+                elif not user_id and conv.user_id is not None:
+                    conv = None
+                elif user_id and conv.user_id is None:
+                    conv.user_id = user_id
+                    await self.session.commit()
+
+            if conv:
+                conv_model = req.model or conv.model or "personalgpt-pro"
                 return conv.id, conv_model
         
         # Create new conversation with title derived from user message
         title = req.message[:30] + ("..." if len(req.message) > 30 else "")
-        model = req.model or await self.settings_repo.get("selected_model", self.config.effective_default_model)
-        if self.config.LLM_PROVIDER == "gemini" and not model.lower().startswith("gemini"):
-            model = "gemini-1.5-flash"
-        conv = await self.conv_repo.create(title=title, model=model)
+        model = req.model or await self.settings_repo.get("selected_model", "personalgpt-pro")
+        conv = await self.conv_repo.create(title=title, model=model, user_id=user_id)
         return conv.id, model
 
     async def _ensure_provider_keys(self, provider_name: str):
@@ -63,8 +68,8 @@ class ChatService:
                 if hasattr(prov, "api_key"):
                     prov.api_key = openai_key
 
-    async def process_chat(self, req: ChatRequest) -> ChatResponse:
-        conv_id, model = await self._resolve_conversation(req)
+    async def process_chat(self, req: ChatRequest, user_id: Optional[str] = None) -> ChatResponse:
+        conv_id, model = await self._resolve_conversation(req, user_id=user_id)
         
         # 1. Save user turn with image if provided
         user_msg = req.message or ("Scan and analyze this image." if req.image_data else "")
@@ -116,11 +121,18 @@ class ChatService:
             current_user_message=user_msg,
         )
 
-        # 7. Select Provider & Generate
         provider_name = req.provider or await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
         if req.image_data and provider_name != "gemini":
             provider_name = "gemini"
-            model = "gemini-3.6-flash"
+            model = "gemini-3.8-flash"
+
+        # Seamless fallback if OpenAI is requested but no key is configured
+        if provider_name == "openai":
+            openai_key = await self.settings_repo.get("openai_api_key") or self.config.OPENAI_API_KEY
+            if not openai_key:
+                logger.info("OpenAI requested but no API key configured. Seamlessly routing to Gemini.")
+                provider_name = "gemini"
+                model = "gemini-3.8-flash"
 
         await self._ensure_provider_keys(provider_name)
         provider = self.registry.get_provider(provider_name)
@@ -132,6 +144,34 @@ class ChatService:
             image_data=req.image_data,
             image_mime_type=req.image_mime_type,
         )
+
+        # If web_search was executed, ensure sources & URL links are included in both response and citations
+        web_search_res = next((tr for tr in tool_results if tr.get("tool") == "web_search"), None)
+        if web_search_res:
+            out = web_search_res.get("output", {})
+            md_sources = out.get("markdown_sources", "")
+            links = out.get("links", [])
+            for idx, l in enumerate(links[:6]):
+                citations.append(ChatCitation(
+                    document_id=f"web_{idx}",
+                    filename=l.get("source", "Web"),
+                    chunk_index=idx,
+                    content=l.get("title", ""),
+                    similarity_score=1.0,
+                    url=l.get("url", "")
+                ))
+            if md_sources and "Sources &" not in assistant_content and "http" not in assistant_content:
+                assistant_content = f"{assistant_content.rstrip()}\n\n{md_sources}"
+            elif md_sources and md_sources.strip() not in assistant_content and "Sources & Verified Links" not in assistant_content:
+                assistant_content = f"{assistant_content.rstrip()}\n\n{md_sources}"
+
+        # If image_generation tool was called, guarantee the image is at the very beginning of the response
+        if tool_results and any(tr.get("tool") == "image_generation" for tr in tool_results):
+            img_res = next((tr for tr in tool_results if tr.get("tool") == "image_generation"), None)
+            if img_res:
+                img_md = img_res.get("output", {}).get("markdown", "")
+                if img_md and img_md not in assistant_content:
+                    assistant_content = f"{img_md}\n\n---\n\n{assistant_content}"
 
 
         # 8. Save assistant message
@@ -160,8 +200,8 @@ class ChatService:
             tool_calls=tool_results,
         )
 
-    async def stream_chat(self, req: ChatRequest) -> AsyncIterator[str]:
-        conv_id, model = await self._resolve_conversation(req)
+    async def stream_chat(self, req: ChatRequest, user_id: Optional[str] = None) -> AsyncIterator[str]:
+        conv_id, model = await self._resolve_conversation(req, user_id=user_id)
 
         # Save user turn with image if provided
         user_msg = req.message or ("Scan and analyze this image." if req.image_data else "")
@@ -196,15 +236,20 @@ class ChatService:
 
         # Tools & Agents
         tool_results = []
+        collected_content = []
         if req.use_tools and self.config.ENABLE_TOOLS and not req.image_data:
             agent_eval = await self.agent_manager.evaluate_and_execute(user_msg)
             if agent_eval:
                 tool_results.append(agent_eval)
-                # Yield immediate tool notification chunk
                 tool_name = agent_eval["tool"]
-                notification = f"⚙️ *Executed tool `{tool_name}`...*\n\n"
-                payload = json.dumps({"delta": notification, "done": False})
-                yield f"data: {payload}\n\n"
+                # For image generation, stream the image markdown immediately at the very beginning!
+                if tool_name == "image_generation":
+                    out = agent_eval.get("output", {})
+                    img_md = out.get("markdown", "")
+                    if img_md:
+                        notification = f"{img_md}\n\n---\n\n"
+                        collected_content.append(notification)
+                        yield f"data: {json.dumps({'delta': notification, 'done': False})}\n\n"
 
         # Assemble Prompts
         system_msg = self.prompt_manager.build_system_message(
@@ -221,12 +266,36 @@ class ChatService:
         provider_name = req.provider or await self.settings_repo.get("selected_provider", self.config.LLM_PROVIDER)
         if req.image_data and provider_name != "gemini":
             provider_name = "gemini"
-            model = "gemini-3.6-flash"
+            model = "gemini-3.8-flash"
+
+        # Seamless fallback if OpenAI is requested but no key is configured
+        if provider_name == "openai":
+            openai_key = await self.settings_repo.get("openai_api_key") or self.config.OPENAI_API_KEY
+            if not openai_key:
+                logger.info("OpenAI requested in stream but no API key configured. Seamlessly routing to Gemini.")
+                provider_name = "gemini"
+                model = "gemini-3.8-flash"
 
         await self._ensure_provider_keys(provider_name)
         provider = self.registry.get_provider(provider_name)
 
-        collected_content = []
+        # Web search citation collection
+        web_search_res = next((tr for tr in tool_results if tr.get("tool") == "web_search"), None)
+        md_sources = ""
+        if web_search_res:
+            out = web_search_res.get("output", {})
+            md_sources = out.get("markdown_sources", "")
+            links = out.get("links", [])
+            for idx, l in enumerate(links[:6]):
+                citations.append(ChatCitation(
+                    document_id=f"web_{idx}",
+                    filename=l.get("source", "Web"),
+                    chunk_index=idx,
+                    content=l.get("title", ""),
+                    similarity_score=1.0,
+                    url=l.get("url", "")
+                ))
+
         try:
             async for token in provider.stream(
                 assembled_messages,
@@ -239,7 +308,6 @@ class ChatService:
                 chunk_data = json.dumps({"delta": token, "done": False})
                 yield f"data: {chunk_data}\n\n"
 
-
         except Exception as e:
             logger.error(f"Error in LLM stream: {e}", exc_info=True)
             err_msg = f"\n\n*[Error: {str(e)}]*"
@@ -247,6 +315,18 @@ class ChatService:
             yield f"data: {json.dumps({'delta': err_msg, 'done': False})}\n\n"
 
         full_content = "".join(collected_content)
+
+        # If web search returned sources and they were not included in the response, stream them now
+        if md_sources and "Sources &" not in full_content and "http" not in full_content:
+            extra_links = f"\n\n{md_sources}"
+            collected_content.append(extra_links)
+            full_content += extra_links
+            yield f"data: {json.dumps({'delta': extra_links, 'done': False})}\n\n"
+        elif md_sources and md_sources.strip() not in full_content and "Sources & Verified Links" not in full_content:
+            extra_links = f"\n\n{md_sources}"
+            collected_content.append(extra_links)
+            full_content += extra_links
+            yield f"data: {json.dumps({'delta': extra_links, 'done': False})}\n\n"
 
         # Save assistant message
         citation_dicts = [c.model_dump() for c in citations] if citations else None

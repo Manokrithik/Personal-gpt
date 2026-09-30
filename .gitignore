@@ -59,6 +59,7 @@ data/documents/*
 !data/documents/.gitkeep
 data/backups/*
 !data/backups/.gitkeep
+data/app_profile/
 chroma_db/
 vector_store/
 

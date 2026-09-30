@@ -21,6 +21,7 @@ interface ChatState {
   togglePinConversation: (id: string, is_pinned: boolean) => Promise<void>;
   setCameraModalOpen: (open: boolean) => void;
   setMobileSidebarOpen: (open: boolean) => void;
+  clearGuestHistory: () => void;
   sendMessage: (
     text: string,
     options?: {
@@ -51,16 +52,40 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setCameraModalOpen: (open: boolean) => set({ isCameraModalOpen: open }),
   setMobileSidebarOpen: (open: boolean) => set({ isMobileSidebarOpen: open }),
 
+  clearGuestHistory: () => {
+    set({
+      conversations: [],
+      activeConversationId: null,
+      messages: [],
+      isStreaming: false,
+      streamingMessageId: null,
+      abortController: null,
+    });
+  },
+
   fetchConversations: async () => {
+    const token = localStorage.getItem('personalgpt_token');
+    if (!token) {
+      // Guest mode (unauthenticated): all chat history clears on page reload
+      set({ conversations: [], activeConversationId: null, messages: [] });
+      return;
+    }
+
     try {
       const convs = await chatService.listConversations();
       set({ conversations: convs });
-      // If no active conversation, pick the first one
-      if (!get().activeConversationId && convs.length > 0) {
-        await get().selectConversation(convs[0].id);
+      if (convs.length > 0) {
+        const currentId = get().activeConversationId;
+        const exists = convs.some((c) => c.id === currentId);
+        if (!exists) {
+          await get().selectConversation(convs[0].id);
+        }
+      } else {
+        set({ activeConversationId: null, messages: [] });
       }
     } catch (e) {
-      console.error('Failed to fetch conversations', e);
+      console.error('Failed to fetch user conversations', e);
+      set({ conversations: [], activeConversationId: null, messages: [] });
     }
   },
 

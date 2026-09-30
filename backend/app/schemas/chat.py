@@ -8,6 +8,7 @@ class ChatCitation(BaseModel):
     content: str
     page: Optional[int] = None
     similarity_score: Optional[float] = None
+    url: Optional[str] = None
 
 class ChatRequest(BaseModel):
     conversation_id: Optional[str] = None
